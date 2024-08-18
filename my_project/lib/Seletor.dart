@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'Login.dart';
-import 'register.dart'; // Importa a tela de registro
+import 'Register.dart'; // Importa a tela de registro
 
 class Seletor extends StatelessWidget {
-  const Seletor({super.key});
+  const Seletor({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -14,6 +14,8 @@ class Seletor extends StatelessWidget {
 }
 
 class UserSelectionBody extends StatelessWidget {
+  const UserSelectionBody({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -52,7 +54,7 @@ class UserSelectionBody extends StatelessWidget {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => Login()),
+                        MaterialPageRoute(builder: (context) => const Login()),
                       );
                     },
                   ),
@@ -63,7 +65,7 @@ class UserSelectionBody extends StatelessWidget {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => Login()),
+                        MaterialPageRoute(builder: (context) => const Login()),
                       );
                     },
                   ),
