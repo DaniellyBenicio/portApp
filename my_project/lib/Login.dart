@@ -1,12 +1,76 @@
 import 'package:flutter/material.dart';
-
+import 'package:firebase_auth/firebase_auth.dart'; // Importa o Firebase Auth
+import 'HomePage.dart'; // Substitua pelo caminho correto para a tela inicial
+import 'RecoverPassword.dart'; 
+import 'Register.dart';
 import 'package:flutter/gestures.dart';
 
-import 'Register.dart';
-import 'RecoverPassword.dart'; 
+class Login extends StatefulWidget {
+  final String userType;
 
-class Login extends StatelessWidget {
-  const Login({Key? key}) : super(key: key);
+  const Login({Key? key, required this.userType}) : super(key: key);
+
+  @override
+  _LoginState createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false; // Gerenciar o estado de carregamento
+
+  Future<void> _login() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Por favor, preencha todos os campos.')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true; // Ativa o indicador de carregamento
+    });
+
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Navega para a tela inicial após o login bem-sucedido
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage(userType: widget.userType)),
+      );
+    } on FirebaseAuthException catch (e) {
+      // Mensagens específicas para diferentes erros
+      String message;
+      if (e.code == 'user-not-found') {
+        message = 'Nenhum usuário encontrado com esse e-mail.';
+      } else if (e.code == 'wrong-password') {
+        message = 'Senha incorreta. Tente novamente.';
+      } else if (e.code == 'invalid-email') {
+        message = 'E-mail inválido.';
+      } else {
+        message = 'Erro ao fazer login: ${e.message}';
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    } catch (e) {
+      // Mensagem genérica para outros erros
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao fazer login: ${e.toString()}')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false; // Desativa o indicador de carregamento
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,10 +79,10 @@ class Login extends StatelessWidget {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            // Ação do botão de voltar
+            Navigator.pop(context); // Ação do botão de voltar
           },
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.blue,
         elevation: 0,
       ),
       body: Padding(
@@ -26,7 +90,6 @@ class Login extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Centraliza os textos
             Text(
               'Entre com E-mail',
               style: TextStyle(
@@ -38,56 +101,21 @@ class Login extends StatelessWidget {
             ),
             SizedBox(height: 8),
             Text(
-              'Insira sua conta de e-mail para enviar o código de verificação e faça login no PortApp.',
+              'Insira sua conta de e-mail e senha para acessar sua conta.',
               style: TextStyle(fontSize: 16),
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 32),
-            
-            // Campos de Email e Senha alinhados à esquerda
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Email',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  TextField(
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.blue),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'Senha',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black,
-                    ),
-                  ),
-                  SizedBox(height: 8),
-                  TextField(
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            _buildTextField(
+              controller: _emailController,
+              label: 'Email',
+              isPassword: false,
+            ),
+            SizedBox(height: 16),
+            _buildTextField(
+              controller: _passwordController,
+              label: 'Senha',
+              isPassword: true,
             ),
             SizedBox(height: 16),
             Align(
@@ -101,30 +129,30 @@ class Login extends StatelessWidget {
                 },
                 child: Text(
                   'Esqueceu sua senha?',
-                  style: TextStyle(color: Color.fromARGB(255, 2, 70, 216)),
+                  style: TextStyle(color: Colors.blue),
                 ),
               ),
             ),
             SizedBox(height: 50),
-            SizedBox(
-              width: 250, // Ajustado para ocupar toda a largura disponível
-              child: ElevatedButton(
-                onPressed: () {
-                  // Ação do botão "Entrar"
-                },
-                child: Text(
-                  'Entrar',
-                  style: TextStyle(color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromARGB(255, 2, 70, 216), // Cor azul
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+            _isLoading
+                ? Center(child: CircularProgressIndicator())
+                : SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _login,
+                      child: Text(
+                        'Entrar',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue, // Corrigido para backgroundColor
+                        padding: EdgeInsets.symmetric(vertical: 20),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
             Spacer(),
             RichText(
               text: TextSpan(
@@ -133,13 +161,15 @@ class Login extends StatelessWidget {
                 children: <TextSpan>[
                   TextSpan(
                     text: 'Registre-se',
-                    style: TextStyle(color: Color.fromARGB(255, 2, 70, 216)), // Cor azul
+                    style: TextStyle(color: Colors.blue),
                     recognizer: TapGestureRecognizer()..onTap = () {
                       Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Register()),
-                   );
-                  },
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Register(userType: widget.userType),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),
@@ -147,6 +177,39 @@ class Login extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required bool isPassword,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.black,
+          ),
+        ),
+        SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          obscureText: isPassword,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.blue),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
