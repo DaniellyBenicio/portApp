@@ -1,159 +1,107 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:my_project/services/firestore_service.dart'; // Corrija o caminho para o seu serviço Firestore
 
-class Register extends StatelessWidget {
-  const Register({Key? key}) : super(key: key);
+class Register extends StatefulWidget {
+  final String userType;
+
+  const Register({Key? key, required this.userType}) : super(key: key);
+
+  @override
+  _RegisterState createState() => _RegisterState();
+}
+
+class _RegisterState extends State<Register> {
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _additionalInfoController = TextEditingController();
+
+  Future<void> _register() async {
+    if (_passwordController.text == _confirmPasswordController.text) {
+      try {
+        // Crie o usuário com FirebaseAuth
+        UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: _emailController.text,
+          password: _passwordController.text,
+        );
+
+        // Defina o ID do usuário
+        final uid = userCredential.user?.uid;
+
+        if (uid != null) {
+          // Adiciona o usuário usando FirestoreService
+          await FirestoreService().addUser(
+            _emailController.text,
+            _nameController.text,
+            widget.userType,
+            _additionalInfoController.text, // Ano de ingresso ou formação
+          );
+
+          // Mensagem de sucesso
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Registro realizado com sucesso!')),
+          );
+
+          Navigator.pop(context); // Navega de volta após o registro
+        }
+      } catch (e) {
+        // Mensagem de erro
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao registrar: ${e.toString()}')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('As senhas não coincidem')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context); // Navega de volta
-          },
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
+        title: Text('Registro'),
+        backgroundColor: Colors.blue,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: 600,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(labelText: 'Nome Completo'),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  'Registre-se com o E-mail',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Crie sua conta para começar a usar o PortApp',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.black,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-                Form(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        'Nome Completo',
-                        style: TextStyle(fontSize: 16, color: Colors.black),
-                      ),
-                      SizedBox(height: 8),
-                      TextField(
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.blue),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Email',
-                        style: TextStyle(fontSize: 16, color: Colors.black),
-                      ),
-                      SizedBox(height: 8),
-                      TextField(
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Colors.blue),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Senha',
-                        style: TextStyle(fontSize: 16, color: Colors.black),
-                      ),
-                      SizedBox(height: 8),
-                      TextField(
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Confirme a Senha',
-                        style: TextStyle(fontSize: 16, color: Colors.black),
-                      ),
-                      SizedBox(height: 8),
-                      TextField(
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      ElevatedButton(
-                        onPressed: () {
-                          // Ação do botão "Registrar"
-                        },
-                        child: Text(
-                          'Registrar',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color.fromARGB(255, 2, 70, 216), 
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      RichText(
-                        text: TextSpan(
-                          text: 'Já possui uma conta? ',
-                          style: TextStyle(color: Colors.black),
-                          children: <TextSpan>[
-                            TextSpan(
-                              text: 'Entrar',
-                              style: TextStyle(
-                                color: Color.fromARGB(255, 2, 70, 216), 
-                                fontWeight: FontWeight.bold,
-                              ),
-                                recognizer: TapGestureRecognizer()..onTap = () {
-                                Navigator.pop(context); 
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            TextField(
+              controller: _emailController,
+              decoration: InputDecoration(labelText: 'Email'),
             ),
-          ),
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: InputDecoration(labelText: 'Senha'),
+            ),
+            TextField(
+              controller: _confirmPasswordController,
+              obscureText: true,
+              decoration: InputDecoration(labelText: 'Confirmar Senha'),
+            ),
+            TextField(
+              controller: _additionalInfoController,
+              decoration: InputDecoration(
+                labelText: widget.userType == 'aluno' ? 'Ano de Ingresso' : 'Formação',
+              ),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _register,
+              child: Text('Registrar'),
+            ),
+          ],
         ),
       ),
     );
