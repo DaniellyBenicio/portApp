@@ -73,71 +73,11 @@ class PortfolioPage extends StatelessWidget {
         Container(
           margin: EdgeInsets.only(
             left: 16.0,
-            top: 0.0,
+            top: 16.0,
             right: 16.0,
-            bottom: 0.0,
-          ),
-          child: Text(
-            'Meus Portifólios',
-            textAlign: TextAlign.left, // Define o alinhamento do texto
-            style: TextStyle(
-              fontSize: 36,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
+            bottom: 16.0,
+    ),
 
-        SizedBox(height: 10),
-        // Espaçamento entre o título e o próximo widget
-        Container(
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: 16.0,
-              top: 0.0,
-              right: 16.0,
-              bottom: 0.0,
-            ),
-            child: Text('Filtrar por',
-                style: TextStyle(
-                  color: Colors.white,
-                )),
-          ),
-          decoration: BoxDecoration(
-            color: Color.fromRGBO(19, 79, 145, 1),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          padding: EdgeInsets.all(4.0),
-          width: 356,
-          height: 32,
-          margin: EdgeInsets.only(left: 16, top: 0.0, right: 16.0, bottom: 0.0),
-        ),
-
-        SizedBox(height: 10),
-
-        Container(
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: 16.0,
-              top: 0.0,
-              right: 16.0,
-              bottom: 0.0,
-            ),
-            child: Text('Filtrar por',
-                style: TextStyle(
-                  color: Colors.white,
-                )),
-          ),
-          decoration: BoxDecoration(
-            color: Color.fromRGBO(19, 79, 145, 1),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          padding: EdgeInsets.all(4.0),
-          width: 356,
-          height: 32,
-          margin: EdgeInsets.only(left: 16, top: 0.0, right: 16.0, bottom: 0.0),
-        ),
-
-        Container(
           child: TextField(
             decoration: InputDecoration(
               labelText: 'Digite o nome da disciplina', // Texto do rótulo
@@ -145,6 +85,33 @@ class PortfolioPage extends StatelessWidget {
               suffixIcon: Icon(
                   Icons.search), // Ícone de pesquisa dentro da caixa de texto
             ),
+          ),
+        ),
+        Container(
+          margin: EdgeInsets.only(
+            left: 16.0,
+            top: 0.0,
+            right: 16.0,
+            bottom: 0.0,
+          ),
+          child: Text(
+            'Meus Portifólios - Amanda',
+            textAlign: TextAlign.left, // Define o alinhamento do texto
+            style: TextStyle(
+              fontSize: 36,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        Container(
+          margin: EdgeInsets.only(
+            left: 16.0,
+            top: 16.0,
+            right: 16.0,
+            bottom: 16.0,
+          ),
+          child: Text(
+            'Protifolios'
           ),
         ),
       ],
