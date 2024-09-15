@@ -55,7 +55,7 @@ class UserSelectionBody extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => Login(userType: 'aluno'),
+                          builder: (context) => Login(userType: 'Aluno'),
                         ),
                       );
                     },
@@ -68,7 +68,7 @@ class UserSelectionBody extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => Login(userType: 'professor'),
+                          builder: (context) => Login(userType: 'Professor'),
                         ),
                       );
                     },
