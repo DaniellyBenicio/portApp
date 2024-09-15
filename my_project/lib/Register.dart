@@ -18,6 +18,9 @@ class _RegisterState extends State<Register> {
   final _confirmPasswordController = TextEditingController();
   final _additionalInfoController = TextEditingController();
 
+  bool _obscurePassword = true; // Gerenciar a visibilidade da senha
+  bool _obscureConfirmPassword = true; // Gerenciar a visibilidade da confirmação da senha
+
   Future<void> _register() async {
     if (_passwordController.text == _confirmPasswordController.text) {
       try {
@@ -33,15 +36,17 @@ class _RegisterState extends State<Register> {
         if (uid != null) {
           // Adiciona o usuário usando FirestoreService
           await FirestoreService().addUser(
-            _emailController.text,
-            _nameController.text,
-            widget.userType,
-            _additionalInfoController.text, // Ano de ingresso ou formação
+            email: _emailController.text,
+            nome: _nameController.text,
+            tipo: widget.userType,
+            infoAdicional: widget.userType == 'Aluno'
+                ? null
+                : _additionalInfoController.text, // Somente para professor
           );
 
           // Mensagem de sucesso
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Registro realizado com sucesso!')),
+            SnackBar(content: Text('Cadastro realizado com sucesso!')),
           );
 
           Navigator.pop(context); // Navega de volta após o registro
@@ -49,7 +54,7 @@ class _RegisterState extends State<Register> {
       } catch (e) {
         // Mensagem de erro
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao registrar: ${e.toString()}')),
+          SnackBar(content: Text('Erro ao cadastrar: ${e.toString()}')),
         );
       }
     } else {
@@ -63,7 +68,7 @@ class _RegisterState extends State<Register> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Registro'),
+        title: Text('Cadastro'),
         backgroundColor: Colors.blue,
       ),
       body: Padding(
@@ -72,38 +77,100 @@ class _RegisterState extends State<Register> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
+            _buildTextField(
               controller: _nameController,
-              decoration: InputDecoration(labelText: 'Nome Completo'),
+              label: 'Nome Completo',
+              isPassword: false,
             ),
-            TextField(
+            _buildTextField(
               controller: _emailController,
-              decoration: InputDecoration(labelText: 'Email'),
+              label: 'Email',
+              isPassword: false,
             ),
-            TextField(
+            _buildTextField(
               controller: _passwordController,
-              obscureText: true,
-              decoration: InputDecoration(labelText: 'Senha'),
+              label: 'Senha',
+              isPassword: true,
+              obscureText: _obscurePassword,
+              onVisibilityChanged: (isVisible) {
+                setState(() {
+                  _obscurePassword = !isVisible;
+                });
+              },
             ),
-            TextField(
+            _buildTextField(
               controller: _confirmPasswordController,
-              obscureText: true,
-              decoration: InputDecoration(labelText: 'Confirmar Senha'),
+              label: 'Confirmar Senha',
+              isPassword: true,
+              obscureText: _obscureConfirmPassword,
+              onVisibilityChanged: (isVisible) {
+                setState(() {
+                  _obscureConfirmPassword = !isVisible;
+                });
+              },
             ),
-            TextField(
-              controller: _additionalInfoController,
-              decoration: InputDecoration(
-                labelText: widget.userType == 'aluno' ? 'Ano de Ingresso' : 'Formação',
+            if (widget.userType == 'Professor') ...[
+              _buildTextField(
+                controller: _additionalInfoController,
+                label: 'Formação',
+                isPassword: false,
               ),
-            ),
+            ],
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: _register,
-              child: Text('Registrar'),
+              child: Text('Cadastrar'),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required bool isPassword,
+    bool obscureText = false,
+    ValueChanged<bool>? onVisibilityChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.black,
+          ),
+        ),
+        SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          obscureText: isPassword ? obscureText : false,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(color: Colors.blue),
+            ),
+            suffixIcon: isPassword
+                ? IconButton(
+                    icon: Icon(
+                      obscureText ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      if (onVisibilityChanged != null) {
+                        onVisibilityChanged(obscureText);
+                      }
+                    },
+                  )
+                : null,
+          ),
+        ),
+      ],
     );
   }
 }
