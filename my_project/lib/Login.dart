@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Importa o Firebase Auth
-import 'HomePage.dart'; // Substitua pelo caminho correto para a tela inicial
+import 'package:shared_preferences/shared_preferences.dart'; 
 import 'RecoverPassword.dart'; 
 import 'Register.dart';
 import 'package:flutter/gestures.dart';
@@ -18,6 +18,7 @@ class _LoginState extends State<Login> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false; // Gerenciar o estado de carregamento
+  bool _obscurePassword = true; // Gerenciar a visibilidade da senha
 
   Future<void> _login() async {
     final email = _emailController.text.trim();
@@ -25,7 +26,7 @@ class _LoginState extends State<Login> {
 
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Por favor, preencha todos os campos.')),
+        const SnackBar(content: Text('Por favor, preencha todos os campos.')),
       );
       return;
     }
@@ -40,11 +41,18 @@ class _LoginState extends State<Login> {
         password: password,
       );
 
+      // Salva o tipo de usuário no SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_type', widget.userType);
+
       // Navega para a tela inicial após o login bem-sucedido
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage(userType: widget.userType)),
-      );
+      if (widget.userType == 'Professor') {
+        Navigator.pushReplacementNamed(context, '/homeProfessor');
+      } else if (widget.userType == 'Aluno') {
+        Navigator.pushReplacementNamed(context, '/homeAluno');
+      } else {
+        print('Tipo de usuário inválido: ${widget.userType}');
+      }
     } on FirebaseAuthException catch (e) {
       // Mensagens específicas para diferentes erros
       String message;
@@ -85,7 +93,7 @@ class _LoginState extends State<Login> {
         backgroundColor: Colors.blue,
         elevation: 0,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -116,6 +124,12 @@ class _LoginState extends State<Login> {
               controller: _passwordController,
               label: 'Senha',
               isPassword: true,
+              obscureText: _obscurePassword,
+              onVisibilityChanged: (isVisible) {
+                setState(() {
+                  _obscurePassword = !isVisible;
+                });
+              },
             ),
             SizedBox(height: 16),
             Align(
@@ -145,7 +159,7 @@ class _LoginState extends State<Login> {
                         style: TextStyle(color: Colors.white),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue, // Corrigido para backgroundColor
+                        backgroundColor: Colors.blue,
                         padding: EdgeInsets.symmetric(vertical: 20),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -153,7 +167,7 @@ class _LoginState extends State<Login> {
                       ),
                     ),
                   ),
-            Spacer(),
+            SizedBox(height: 20), // Espaço antes do texto "Não possui uma conta?"
             RichText(
               text: TextSpan(
                 text: 'Não possui uma conta? ',
@@ -184,6 +198,8 @@ class _LoginState extends State<Login> {
     required TextEditingController controller,
     required String label,
     required bool isPassword,
+    bool obscureText = false,
+    ValueChanged<bool>? onVisibilityChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -198,7 +214,7 @@ class _LoginState extends State<Login> {
         SizedBox(height: 8),
         TextField(
           controller: controller,
-          obscureText: isPassword,
+          obscureText: isPassword ? obscureText : false,
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -207,6 +223,18 @@ class _LoginState extends State<Login> {
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(color: Colors.blue),
             ),
+            suffixIcon: isPassword
+                ? IconButton(
+                    icon: Icon(
+                      obscureText ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: () {
+                      if (onVisibilityChanged != null) {
+                        onVisibilityChanged(obscureText);
+                      }
+                    },
+                  )
+                : null,
           ),
         ),
       ],
