@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'menu.dart';
-// Importe o arquivo onde o Menu está definido
+import 'student_pages.dart';
+import 'teacher_pages.dart';
+import 'settings_page.dart';
+
 
 class HomePage extends StatefulWidget {
-  final String userType;
+  final String userType; // aluno ou professor
 
   const HomePage({Key? key, required this.userType}) : super(key: key);
 
@@ -14,27 +17,41 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = [
-    PortfolioPage(),
-    NotificationsPage(),
-    SettingsPage(),
-  ];
+  List<Widget> _getPages() {
+    if (widget.userType == 'Aluno') {
+      return [
+        StudentPortfolioPage(),
+        StudentSubjectsPage(),
+        SettingsPage(userType: widget.userType),
+      ];
+    } else if (widget.userType == 'Professor') {
+      return [
+        TeacherPortfolioPage(),
+        TeacherSubjectsPage(),
+        SettingsPage(userType: widget.userType),
+      ];
+    } else {
+      return [
+        Center(child: Text('Tipo de usuário inválido')),
+      ];
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
       _currentIndex = index;
     });
 
-    // Navegação entre páginas
+    // Navegação entre páginas (use pushNamed para evitar substituição completa)
     switch (index) {
       case 0:
-        Navigator.pushReplacementNamed(context, '/HomePage');
+        Navigator.pushNamed(context, '/HomePage');
         break;
       case 1:
-        Navigator.pushReplacementNamed(context, '/notifications');
+        Navigator.pushNamed(context, '/disciplinas');
         break;
       case 2:
-        Navigator.pushReplacementNamed(context, '/settings');
+        Navigator.pushNamed(context, '/settings');
         break;
     }
   }
@@ -43,11 +60,12 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Perfil'),
+        automaticallyImplyLeading: true, // Garante apenas uma seta de voltar
+        elevation: 0,
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.notifications),
-            tooltip: 'Notifications',
+            tooltip: 'Notificações',
             onPressed: () {
               Navigator.pushReplacementNamed(context, '/notifications');
             },
@@ -58,77 +76,7 @@ class _HomePageState extends State<HomePage> {
         currentIndex: _currentIndex,
         onItemTapped: _onItemTapped,
       ),
-      body: _pages[_currentIndex],
+      body: _getPages()[_currentIndex],
     );
-  }
-}
-
-class PortfolioPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      // Alinha os widgets à esquerda
-      children: <Widget>[
-        Container(
-          margin: EdgeInsets.only(
-            left: 16.0,
-            top: 16.0,
-            right: 16.0,
-            bottom: 16.0,
-    ),
-
-          child: TextField(
-            decoration: InputDecoration(
-              labelText: 'Digite o nome da disciplina', // Texto do rótulo
-              border: OutlineInputBorder(), // Borda ao redor da caixa de texto
-              suffixIcon: Icon(
-                  Icons.search), // Ícone de pesquisa dentro da caixa de texto
-            ),
-          ),
-        ),
-        Container(
-          margin: EdgeInsets.only(
-            left: 16.0,
-            top: 0.0,
-            right: 16.0,
-            bottom: 0.0,
-          ),
-          child: Text(
-            'Meus Portifólios - Amanda',
-            textAlign: TextAlign.left, // Define o alinhamento do texto
-            style: TextStyle(
-              fontSize: 36,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        Container(
-          margin: EdgeInsets.only(
-            left: 16.0,
-            top: 16.0,
-            right: 16.0,
-            bottom: 16.0,
-          ),
-          child: Text(
-            'Protifolios'
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class NotificationsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text('Notificações Page'));
-  }
-}
-
-class SettingsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text('Configurações Page'));
   }
 }
