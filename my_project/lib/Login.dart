@@ -114,26 +114,32 @@ class _LoginState extends State<Login> {
               textAlign: TextAlign.center,
             ),
             SizedBox(height: 32),
-            _buildTextField(
-              controller: _emailController,
-              label: 'Email',
-              isPassword: false,
+            Container(
+              width: 350, // Largura fixa dos campos
+              child: _buildTextField(
+                controller: _emailController,
+                label: 'Email',
+                isPassword: false,
+              ),
             ),
             SizedBox(height: 16),
-            _buildTextField(
-              controller: _passwordController,
-              label: 'Senha',
-              isPassword: true,
-              obscureText: _obscurePassword,
-              onVisibilityChanged: (isVisible) {
-                setState(() {
-                  _obscurePassword = !isVisible;
-                });
-              },
+            Container(
+              width: 350, // Largura fixa dos campos
+              child: _buildTextField(
+                controller: _passwordController,
+                label: 'Senha',
+                isPassword: true,
+                obscureText: _obscurePassword,
+                onVisibilityChanged: (isVisible) {
+                  setState(() {
+                    _obscurePassword = !isVisible;
+                  });
+                },
+              ),
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 8), // Ajuste o espaço entre o campo de senha e o botão de esquecer senha
             Align(
-              alignment: Alignment.centerLeft,
+              alignment: Alignment.center,
               child: TextButton(
                 onPressed: () {
                   Navigator.push(
@@ -147,11 +153,11 @@ class _LoginState extends State<Login> {
                 ),
               ),
             ),
-            SizedBox(height: 50),
+            SizedBox(height: 16), // Ajuste o espaço entre o botão de esquecer senha e o botão de entrar
             _isLoading
                 ? Center(child: CircularProgressIndicator())
                 : SizedBox(
-                    width: double.infinity,
+                    width: 350, // Largura fixa do botão
                     child: ElevatedButton(
                       onPressed: _login,
                       child: Text(
