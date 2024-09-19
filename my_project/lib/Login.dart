@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // Importa o Firebase Auth
+import 'package:firebase_auth/firebase_auth.dart'; 
 import 'package:shared_preferences/shared_preferences.dart'; 
 import 'RecoverPassword.dart'; 
 import 'Register.dart';
@@ -8,7 +8,7 @@ import 'package:flutter/gestures.dart';
 class Login extends StatefulWidget {
   final String userType;
 
-  const Login({Key? key, required this.userType}) : super(key: key);
+  const Login({super.key, required this.userType});
 
   @override
   _LoginState createState() => _LoginState();
@@ -85,7 +85,7 @@ class _LoginState extends State<Login> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context); // Ação do botão de voltar
           },
@@ -98,7 +98,7 @@ class _LoginState extends State<Login> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
+            const Text(
               'Entre com E-mail',
               style: TextStyle(
                 fontSize: 24,
@@ -107,33 +107,39 @@ class _LoginState extends State<Login> {
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 8),
-            Text(
+            const SizedBox(height: 8),
+            const Text(
               'Insira sua conta de e-mail e senha para acessar sua conta.',
               style: TextStyle(fontSize: 16),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 32),
-            _buildTextField(
-              controller: _emailController,
-              label: 'Email',
-              isPassword: false,
+            const SizedBox(height: 32),
+            SizedBox(
+              width: 350, // Largura fixa dos campos
+              child: _buildTextField(
+                controller: _emailController,
+                label: 'Email',
+                isPassword: false,
+              ),
             ),
-            SizedBox(height: 16),
-            _buildTextField(
-              controller: _passwordController,
-              label: 'Senha',
-              isPassword: true,
-              obscureText: _obscurePassword,
-              onVisibilityChanged: (isVisible) {
-                setState(() {
-                  _obscurePassword = !isVisible;
-                });
-              },
+            const SizedBox(height: 16),
+            SizedBox(
+              width: 350, // Largura fixa dos campos
+              child: _buildTextField(
+                controller: _passwordController,
+                label: 'Senha',
+                isPassword: true,
+                obscureText: _obscurePassword,
+                onVisibilityChanged: (isVisible) {
+                  setState(() {
+                    _obscurePassword = !isVisible;
+                  });
+                },
+              ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 8), // Ajuste o espaço entre o campo de senha e o botão de esquecer senha
             Align(
-              alignment: Alignment.centerLeft,
+              alignment: Alignment.center,
               child: TextButton(
                 onPressed: () {
                   Navigator.push(
@@ -141,41 +147,41 @@ class _LoginState extends State<Login> {
                     MaterialPageRoute(builder: (context) => RecoverPassword()),
                   );
                 },
-                child: Text(
+                child: const Text(
                   'Esqueceu sua senha?',
                   style: TextStyle(color: Colors.blue),
                 ),
               ),
             ),
-            SizedBox(height: 50),
+            const SizedBox(height: 16), // Ajuste o espaço entre o botão de esquecer senha e o botão de entrar
             _isLoading
-                ? Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator())
                 : SizedBox(
-                    width: double.infinity,
+                    width: 350, // Largura fixa do botão
                     child: ElevatedButton(
                       onPressed: _login,
-                      child: Text(
+                      child: const Text(
                         'Entrar',
                         style: TextStyle(color: Colors.white),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
-                        padding: EdgeInsets.symmetric(vertical: 20),
+                        padding: const EdgeInsets.symmetric(vertical: 20),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                     ),
                   ),
-            SizedBox(height: 20), // Espaço antes do texto "Não possui uma conta?"
+            const SizedBox(height: 20), // Espaço antes do texto "Não possui uma conta?"
             RichText(
               text: TextSpan(
                 text: 'Não possui uma conta? ',
-                style: TextStyle(color: Colors.black),
+                style: const TextStyle(color: Colors.black),
                 children: <TextSpan>[
                   TextSpan(
                     text: 'Registre-se',
-                    style: TextStyle(color: Colors.blue),
+                    style: const TextStyle(color: Colors.blue),
                     recognizer: TapGestureRecognizer()..onTap = () {
                       Navigator.push(
                         context,
@@ -206,12 +212,12 @@ class _LoginState extends State<Login> {
       children: [
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 16,
             color: Colors.black,
           ),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         TextField(
           controller: controller,
           obscureText: isPassword ? obscureText : false,
@@ -221,7 +227,7 @@ class _LoginState extends State<Login> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.blue),
+              borderSide: const BorderSide(color: Colors.blue),
             ),
             suffixIcon: isPassword
                 ? IconButton(
