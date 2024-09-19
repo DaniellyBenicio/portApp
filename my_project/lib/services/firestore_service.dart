@@ -87,4 +87,8 @@ class FirestoreService {
       return null;
     }
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 8d6d5c981a3b5ad2201741043b23d9e3d839315d
