@@ -24,14 +24,25 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       final firestore = FirebaseFirestore.instance;
-      final doc = await firestore.collection('users').doc(user.uid).get();
+      final email = user.email;
 
-      if (doc.exists) {
-        setState(() {
-          _nameController.text = doc['name']; // Nome do usuário
-          _emailController.text = user.email ?? ''; // E-mail do usuário
-          _profileImageUrl = doc['profileImageUrl']; // URL da imagem do perfil
-        });
+      if (email != null) {
+        final querySnapshot = await firestore
+            .collection('Usuarios')
+            .where('email', isEqualTo: email)
+            .limit(1)
+            .get();
+
+        if (querySnapshot.docs.isNotEmpty) {
+          final doc = querySnapshot.docs.first;
+          setState(() {
+            _nameController.text = doc['nome']; // Nome do usuário
+            _emailController.text = email; // E-mail do usuário
+            _profileImageUrl = doc['profileImageUrl']; // URL da imagem do perfil
+          });
+        } else {
+          print('Documento do usuário não encontrado para o e-mail: $email');
+        }
       }
     }
   }
@@ -40,12 +51,33 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       final firestore = FirebaseFirestore.instance;
-      await firestore.collection('users').doc(user.uid).update({
-        'name': _nameController.text,
-        'profileImageUrl': _profileImageUrl, // Atualizar URL da imagem do perfil se necessário
-      });
-      // Navegar de volta para a página anterior
-      Navigator.pop(context);
+      final email = user.email;
+
+      if (email != null) {
+        final querySnapshot = await firestore
+            .collection('Usuarios')
+            .where('email', isEqualTo: email)
+            .limit(1)
+            .get();
+
+        if (querySnapshot.docs.isNotEmpty) {
+          final docId = querySnapshot.docs.first.id;
+          await firestore.collection('Usuarios').doc(docId).update({
+            'nome': _nameController.text,
+            'profileImageUrl': _profileImageUrl, // Atualizar URL da imagem do perfil se necessário
+          });
+
+          // Exibir uma mensagem de sucesso
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Perfil atualizado com sucesso!'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        } else {
+          print('Documento do usuário não encontrado para o e-mail: $email');
+        }
+      }
     }
   }
 
