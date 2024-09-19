@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:my_project/services/firestore_service.dart';
 
 class DeleteAccountPage extends StatefulWidget {
   @override
@@ -10,7 +11,7 @@ class DeleteAccountPage extends StatefulWidget {
 class _DeleteAccountPageState extends State<DeleteAccountPage> {
   final _passwordController = TextEditingController();
   final _auth = FirebaseAuth.instance;
-  bool _obscurePassword = true; // Controla a visibilidade da senha
+  bool _obscurePassword = true;
 
   String _errorMessage = '';
   String _successMessage = '';
@@ -43,101 +44,78 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
     );
   }
 
-  Future<void> _deleteAccount() async {
-    final password = _passwordController.text;
+ Future<void> _deleteAccount() async {
+  final password = _passwordController.text;
 
-    try {
-      final user = _auth.currentUser;
+  try {
+    final user = _auth.currentUser;
 
-      if (user == null) {
-        setState(() {
-          _errorMessage = 'Usuário não encontrado.';
-        });
-        return;
-      }
-
-      // Reautenticar o usuário
-      final credential = EmailAuthProvider.credential(
-        email: user.email!,
-        password: password,
-      );
-
-      await user.reauthenticateWithCredential(credential);
-
-      final firestore = FirebaseFirestore.instance;
-      final userId = user.uid;
-      final userEmail = user.email!;
-
-      // Verificar se o documento do usuário existe antes de excluir
-      final userDoc = await firestore.collection('users').doc(userId).get();
-      if (userDoc.exists) {
-        final userType = userDoc['tipo']; // Certifique-se de que o campo 'tipo' existe no documento
-
-        // Acessar a subcoleção correta ('Aluno' ou 'Professor')
-        if (userType == 'Aluno') {
-          final alunoDocs = await firestore
-              .collection('users')
-              .doc(userId) // Subcoleção do próprio usuário
-              .collection('Aluno')
-              .where('email', isEqualTo: userEmail)
-              .get();
-
-          for (var doc in alunoDocs.docs) {
-            await doc.reference.delete(); // Excluir o documento correspondente na subcoleção
-          }
-        } else if (userType == 'Professor') {
-          final professorDocs = await firestore
-              .collection('users')
-              .doc(userId) // Subcoleção do próprio usuário
-              .collection('Professor')
-              .where('email', isEqualTo: userEmail)
-              .get();
-
-          for (var doc in professorDocs.docs) {
-            await doc.reference.delete(); // Excluir o documento correspondente na subcoleção
-          }
-        }
-
-        // Excluir o documento principal do usuário
-        await firestore.collection('users').doc(userId).delete();
-      } else {
-        setState(() {
-          _errorMessage = 'Documento do usuário não encontrado no Firestore.';
-        });
-        return;
-      }
-
-      // Excluir a conta do Firebase Auth
-      await user.delete();
-
+    if (user == null) {
       setState(() {
-        _successMessage = 'Conta excluída com sucesso.';
+        _errorMessage = 'Usuário não encontrado.';
       });
-
-      // Navegar para a página de login
-      Navigator.pushReplacementNamed(context, '/login');
-    } catch (e) {
-      setState(() {
-        if (e is FirebaseAuthException) {
-          switch (e.code) {
-            case 'wrong-password':
-              _errorMessage = 'Senha incorreta.';
-              break;
-            case 'user-not-found':
-              _errorMessage = 'Usuário não encontrado.';
-              break;
-            case 'requires-recent-login':
-              _errorMessage = 'Reautenticação necessária. Faça login novamente.';
-              break;
-            default:
-              _errorMessage = 'Ocorreu um erro. Tente novamente.';
-          }
-        } else {
-          _errorMessage = 'Ocorreu um erro. Tente novamente.';
-        }
-      });
+      return;
     }
+
+    // Reautenticar o usuário
+    final credential = EmailAuthProvider.credential(
+      email: user.email!,
+      password: password,
+    );
+
+    await user.reauthenticateWithCredential(credential);
+
+    final email = user.email!; // Use o email para buscar o ID do documento
+    print('Email do Firebase Auth: $email');
+
+    // Utilizando FirestoreService para buscar o ID do documento
+    final firestoreService = FirestoreService();
+    final documentId = await firestoreService.getDocumentIdByEmail(email);
+
+    if (documentId == null) {
+      setState(() {
+        _errorMessage = 'Documento do usuário não encontrado no Firestore.';
+      });
+      return;
+    }
+
+    print('ID do documento Firestore: $documentId');
+
+    // Excluir o documento do Firestore
+    await FirebaseFirestore.instance.collection('Usuarios').doc(documentId).delete();
+    print('Documento do usuário excluído com sucesso.');
+
+    // Excluir a conta do Firebase Auth
+    await user.delete();
+
+    setState(() {
+      _successMessage = 'Conta excluída com sucesso.';
+    });
+
+    // Navegar para a página de login
+    Navigator.pushReplacementNamed(context, '/login');
+  } catch (e) {
+    setState(() {
+      if (e is FirebaseAuthException) {
+        switch (e.code) {
+          case 'wrong-password':
+            _errorMessage = 'Senha incorreta.';
+            break;
+          case 'user-not-found':
+            _errorMessage = 'Usuário não encontrado.';
+            break;
+          case 'requires-recent-login':
+            _errorMessage = 'Reautenticação necessária. Faça login novamente.';
+            break;
+          default:
+            _errorMessage = 'Ocorreu um erro. Tente novamente.';
+        }
+      } else {
+        _errorMessage = 'Ocorreu um erro. Tente novamente.';
+      }
+    });
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -197,4 +175,8 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
       ),
     );
   }
+}
+
+extension on Map<String, dynamic> {
+   get id => null;
 }
