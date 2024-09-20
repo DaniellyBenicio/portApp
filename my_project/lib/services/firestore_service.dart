@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:math';
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -85,6 +86,59 @@ class FirestoreService {
     } catch (e) {
       print('Erro ao obter ID do documento pelo email: $e');
       return null;
+    }
+  }
+
+  // Adiciona uma nova disciplina com uma chave de acesso
+  Future<String?> addDisciplina({
+  required String nome,
+  required String descricao,
+  required String professorUid,
+  }) async {
+    try {
+      String chaveAcesso = _gerarChaveAcesso();
+      await _db.collection('Disciplinas').add({
+        'nome': nome,
+        'descricao': descricao,
+        'professorUid': professorUid,
+        'chaveAcesso': chaveAcesso,
+      });
+      print('Disciplina adicionada com sucesso. Chave de acesso: $chaveAcesso');
+      return chaveAcesso; // Retorna a chave gerada
+    } catch (e) {
+      print('Erro ao adicionar disciplina: $e');
+      return null;
+    }
+  }
+  // Gera uma chave de acesso aleatória
+  String _gerarChaveAcesso() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    final Random rand = Random();
+    return List.generate(8, (index) => chars[rand.nextInt(chars.length)]).join();
+  }
+
+  // Inscreve um aluno em uma disciplina se a chave de acesso for válida
+  Future<void> inscreverAluno(String disciplinaId, String alunoUid, String chaveAcesso) async {
+    try {
+      // Obtém a disciplina para verificar a chave de acesso
+      DocumentSnapshot disciplinaSnapshot = await _db.collection('Disciplinas').doc(disciplinaId).get();
+
+      if (disciplinaSnapshot.exists) {
+        String? chaveValida = disciplinaSnapshot['chaveAcesso'];
+
+        if (chaveAcesso == chaveValida) {
+          await _db.collection('Disciplinas').doc(disciplinaId).collection('alunos').doc(alunoUid).set({
+            'status': 'inscrito',
+          });
+          print('Aluno inscrito na disciplina com sucesso.');
+        } else {
+          print('Chave de acesso inválida.');
+        }
+      } else {
+        print('Disciplina não encontrada.');
+      }
+    } catch (e) {
+      print('Erro ao inscrever aluno: $e');
     }
   }
 }
