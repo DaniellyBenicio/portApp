@@ -8,9 +8,10 @@ import 'package:flutter/gestures.dart';
 class Login extends StatefulWidget {
   final String userType;
 
-  const Login({Key? key, required this.userType}) : super(key: key);
+  const Login({super.key, required this.userType});
 
   @override
+  // ignore: library_private_types_in_public_api
   _LoginState createState() => _LoginState();
 }
 
@@ -36,6 +37,7 @@ class _LoginState extends State<Login> {
     });
 
     try {
+      // ignore: unused_local_variable
       UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
@@ -47,10 +49,13 @@ class _LoginState extends State<Login> {
 
       // Navega para a tela inicial após o login bem-sucedido
       if (widget.userType == 'Professor') {
+        // ignore: use_build_context_synchronously
         Navigator.pushReplacementNamed(context, '/homeProfessor');
       } else if (widget.userType == 'Aluno') {
+        // ignore: use_build_context_synchronously
         Navigator.pushReplacementNamed(context, '/homeAluno');
       } else {
+        // ignore: avoid_print
         print('Tipo de usuário inválido: ${widget.userType}');
       }
     } on FirebaseAuthException catch (e) {
@@ -65,11 +70,13 @@ class _LoginState extends State<Login> {
       } else {
         message = 'Erro ao fazer login: ${e.message}';
       }
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
       );
     } catch (e) {
       // Mensagem genérica para outros erros
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao fazer login: ${e.toString()}')),
       );
@@ -85,12 +92,12 @@ Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(
       leading: IconButton(
-        icon: Icon(Icons.arrow_back),
+        icon: const Icon(Icons.arrow_back),
         onPressed: () {
           Navigator.pop(context); // Ação do botão de voltar
         },
       ),
-      backgroundColor: Colors.blue,
+      backgroundColor: const Color.fromRGBO(18, 86, 143, 1), 
       elevation: 0,
     ),
     body: SingleChildScrollView(
@@ -114,8 +121,8 @@ Widget build(BuildContext context) {
             style: TextStyle(fontSize: 16),
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 32),
-          Container(
+          const SizedBox(height: 32),
+          SizedBox(
             width: 350, // Largura fixa dos campos
             child: _buildTextField(
               controller: _emailController,
@@ -123,8 +130,8 @@ Widget build(BuildContext context) {
               isPassword: false,
             ),
           ),
-          SizedBox(height: 16),
-          Container(
+          const SizedBox(height: 16),
+          SizedBox(
             width: 350, // Largura fixa dos campos
             child: _buildTextField(
               controller: _passwordController,
@@ -136,12 +143,13 @@ Widget build(BuildContext context) {
                   _obscurePassword = !isVisible;
                 });
               },
+              
               onSubmitted: (value) {
                 _login(); // Chama a função de login ao pressionar Enter
               },
             ),
           ),
-          SizedBox(height: 8), // Ajuste o espaço entre o campo de senha e o botão de esquecer senha
+          const SizedBox(height: 8), // Ajuste o espaço entre o campo de senha e o botão de esquecer senha
           Align(
             alignment: Alignment.center,
             child: TextButton(
@@ -151,41 +159,41 @@ Widget build(BuildContext context) {
                   MaterialPageRoute(builder: (context) => RecoverPassword()),
                 );
               },
-              child: Text(
+              child: const Text(
                 'Esqueceu sua senha?',
-                style: TextStyle(color: Colors.blue),
+                style: TextStyle(color: Color.fromRGBO(18, 86, 143, 1), ),
               ),
             ),
           ),
-          SizedBox(height: 16), // Ajuste o espaço entre o botão de esquecer senha e o botão de entrar
+          const SizedBox(height: 16), // Ajuste o espaço entre o botão de esquecer senha e o botão de entrar
           _isLoading
-              ? Center(child: CircularProgressIndicator())
+              ? const Center(child: CircularProgressIndicator())
               : SizedBox(
                   width: 350, // Largura fixa do botão
                   child: ElevatedButton(
                     onPressed: _login,
-                    child: Text(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:  const Color.fromRGBO(18, 86, 143, 1), 
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                    child: const Text(
                       'Entrar',
                       style: TextStyle(color: Colors.white),
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: EdgeInsets.symmetric(vertical: 20),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
                   ),
                 ),
-          SizedBox(height: 20), // Espaço antes do texto "Não possui uma conta?"
+          const SizedBox(height: 50), // Espaço antes do texto "Não possui uma conta?"
           RichText(
             text: TextSpan(
               text: 'Não possui uma conta? ',
-              style: TextStyle(color: Colors.black),
+              style: const TextStyle(color: Colors.black),
               children: <TextSpan>[
                 TextSpan(
                   text: 'Registre-se',
-                  style: TextStyle(color: Colors.blue),
+                  style: const TextStyle(color: Color.fromRGBO(18, 86, 143, 1), ),
                   recognizer: TapGestureRecognizer()..onTap = () {
                     Navigator.push(
                       context,
@@ -217,22 +225,22 @@ Widget _buildTextField({
     children: [
       Text(
         label,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 16,
           color: Colors.black,
         ),
       ),
-      SizedBox(height: 8),
+      const SizedBox(height: 8),
       TextField(
         controller: controller,
         obscureText: isPassword ? obscureText : false,
         decoration: InputDecoration(
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(15),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Colors.blue),
+            borderRadius: BorderRadius.circular(15),
+            borderSide: const BorderSide(color: Color.fromRGBO(18, 86, 143, 1), ),
           ),
           suffixIcon: isPassword
               ? IconButton(
