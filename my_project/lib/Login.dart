@@ -8,9 +8,10 @@ import 'package:flutter/gestures.dart';
 class Login extends StatefulWidget {
   final String userType;
 
-  const Login({Key? key, required this.userType}) : super(key: key);
+  const Login({super.key, required this.userType});
 
   @override
+  // ignore: library_private_types_in_public_api
   _LoginState createState() => _LoginState();
 }
 
@@ -36,6 +37,7 @@ class _LoginState extends State<Login> {
     });
 
     try {
+      // ignore: unused_local_variable
       UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
@@ -47,10 +49,13 @@ class _LoginState extends State<Login> {
 
       // Navega para a tela inicial após o login bem-sucedido
       if (widget.userType == 'Professor') {
+        // ignore: use_build_context_synchronously
         Navigator.pushReplacementNamed(context, '/homeProfessor');
       } else if (widget.userType == 'Aluno') {
+        // ignore: use_build_context_synchronously
         Navigator.pushReplacementNamed(context, '/homeAluno');
       } else {
+        // ignore: avoid_print
         print('Tipo de usuário inválido: ${widget.userType}');
       }
     } on FirebaseAuthException catch (e) {
@@ -65,11 +70,13 @@ class _LoginState extends State<Login> {
       } else {
         message = 'Erro ao fazer login: ${e.message}';
       }
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
       );
     } catch (e) {
       // Mensagem genérica para outros erros
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao fazer login: ${e.toString()}')),
       );
@@ -81,169 +88,176 @@ class _LoginState extends State<Login> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context); // Ação do botão de voltar
-          },
-        ),
-        backgroundColor: Colors.blue,
-        elevation: 0,
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () {
+          Navigator.pop(context); // Ação do botão de voltar
+        },
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              'Entre com E-mail',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
+      backgroundColor: const Color.fromRGBO(18, 86, 143, 1), 
+      elevation: 0,
+    ),
+    body: SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(height: 35), 
+          const Text(
+            'Entre com E-mail',
+            style: TextStyle(
+              fontSize: 25,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Faça login com o seu e-mail e senha para acessar sua conta.',
+            style: TextStyle(fontSize: 16),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 32),
+          SizedBox(
+            width: 350, // Largura fixa dos campos
+            child: _buildTextField(
+              controller: _emailController,
+              label: 'Email',
+              isPassword: false,
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: 350, // Largura fixa dos campos
+            child: _buildTextField(
+              controller: _passwordController,
+              label: 'Senha',
+              isPassword: true,
+              obscureText: _obscurePassword,
+              onVisibilityChanged: (isVisible) {
+                setState(() {
+                  _obscurePassword = !isVisible;
+                });
+              },
+              
+              onSubmitted: (value) {
+                _login(); // Chama a função de login ao pressionar Enter
+              },
+            ),
+          ),
+          const SizedBox(height: 8), // Ajuste o espaço entre o campo de senha e o botão de esquecer senha
+          Align(
+            alignment: Alignment.center,
+            child: TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => RecoverPassword()),
+                );
+              },
+              child: const Text(
+                'Esqueceu sua senha?',
+                style: TextStyle(color: Color.fromRGBO(18, 86, 143, 1), ),
               ),
-              textAlign: TextAlign.center,
             ),
-            SizedBox(height: 8),
-            Text(
-              'Insira sua conta de e-mail e senha para acessar sua conta.',
-              style: TextStyle(fontSize: 16),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 32),
-            Container(
-              width: 350, // Largura fixa dos campos
-              child: _buildTextField(
-                controller: _emailController,
-                label: 'Email',
-                isPassword: false,
-              ),
-            ),
-            SizedBox(height: 16),
-            Container(
-              width: 350, // Largura fixa dos campos
-              child: _buildTextField(
-                controller: _passwordController,
-                label: 'Senha',
-                isPassword: true,
-                obscureText: _obscurePassword,
-                onVisibilityChanged: (isVisible) {
-                  setState(() {
-                    _obscurePassword = !isVisible;
-                  });
-                },
-              ),
-            ),
-            SizedBox(height: 8), // Ajuste o espaço entre o campo de senha e o botão de esquecer senha
-            Align(
-              alignment: Alignment.center,
-              child: TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => RecoverPassword()),
-                  );
-                },
-                child: Text(
-                  'Esqueceu sua senha?',
-                  style: TextStyle(color: Colors.blue),
+          ),
+          const SizedBox(height: 16), // Ajuste o espaço entre o botão de esquecer senha e o botão de entrar
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : SizedBox(
+                  width: 350, // Largura fixa do botão
+                  child: ElevatedButton(
+                    onPressed: _login,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor:  const Color.fromRGBO(18, 86, 143, 1), 
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                    ),
+                    child: const Text(
+                      'Entrar',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            SizedBox(height: 16), // Ajuste o espaço entre o botão de esquecer senha e o botão de entrar
-            _isLoading
-                ? Center(child: CircularProgressIndicator())
-                : SizedBox(
-                    width: 350, // Largura fixa do botão
-                    child: ElevatedButton(
-                      onPressed: _login,
-                      child: Text(
-                        'Entrar',
-                        style: TextStyle(color: Colors.white),
+          const SizedBox(height: 50), // Espaço antes do texto "Não possui uma conta?"
+          RichText(
+            text: TextSpan(
+              text: 'Não possui uma conta? ',
+              style: const TextStyle(color: Colors.black),
+              children: <TextSpan>[
+                TextSpan(
+                  text: 'Registre-se',
+                  style: const TextStyle(color: Color.fromRGBO(18, 86, 143, 1), ),
+                  recognizer: TapGestureRecognizer()..onTap = () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Register(userType: widget.userType),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        padding: EdgeInsets.symmetric(vertical: 20),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                  ),
-            SizedBox(height: 20), // Espaço antes do texto "Não possui uma conta?"
-            RichText(
-              text: TextSpan(
-                text: 'Não possui uma conta? ',
-                style: TextStyle(color: Colors.black),
-                children: <TextSpan>[
-                  TextSpan(
-                    text: 'Registre-se',
-                    style: TextStyle(color: Colors.blue),
-                    recognizer: TapGestureRecognizer()..onTap = () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Register(userType: widget.userType),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ),
+                    );
+                  },
+                ),
+              ],
             ),
-          ],
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget _buildTextField({
+  required TextEditingController controller,
+  required String label,
+  required bool isPassword,
+  bool obscureText = false,
+  ValueChanged<bool>? onVisibilityChanged,
+  ValueChanged<String>? onSubmitted, // Adicionando o parâmetro onSubmitted
+}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        label,
+        style: const TextStyle(
+          fontSize: 16,
+          color: Colors.black,
         ),
       ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required bool isPassword,
-    bool obscureText = false,
-    ValueChanged<bool>? onVisibilityChanged,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.black,
+      const SizedBox(height: 8),
+      TextField(
+        controller: controller,
+        obscureText: isPassword ? obscureText : false,
+        decoration: InputDecoration(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
           ),
-        ),
-        SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          obscureText: isPassword ? obscureText : false,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.blue),
-            ),
-            suffixIcon: isPassword
-                ? IconButton(
-                    icon: Icon(
-                      obscureText ? Icons.visibility_off : Icons.visibility,
-                    ),
-                    onPressed: () {
-                      if (onVisibilityChanged != null) {
-                        onVisibilityChanged(obscureText);
-                      }
-                    },
-                  )
-                : null,
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(15),
+            borderSide: const BorderSide(color: Color.fromRGBO(18, 86, 143, 1), ),
           ),
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    obscureText ? Icons.visibility_off : Icons.visibility,
+                  ),
+                  onPressed: () {
+                    if (onVisibilityChanged != null) {
+                      onVisibilityChanged(obscureText);
+                    }
+                  },
+                )
+              : null,
         ),
-      ],
-    );
-  }
+        onSubmitted: onSubmitted, // Chama o método quando Enter é pressionado
+      ),
+    ],
+  );
+}
 }

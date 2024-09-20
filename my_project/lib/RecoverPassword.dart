@@ -56,14 +56,13 @@ class _RecoverPasswordState extends State<RecoverPassword> {
             Navigator.pop(context); // Navega de volta
           },
         ),
-        backgroundColor: Colors.white,
-        elevation: 0,
+        backgroundColor: Colors.blue,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(8.0),
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
+            constraints: const BoxConstraints(maxWidth: 400),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -73,7 +72,7 @@ class _RecoverPasswordState extends State<RecoverPassword> {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: Colors.blue,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -97,27 +96,31 @@ class _RecoverPasswordState extends State<RecoverPassword> {
                         style: TextStyle(fontSize: 16, color: Colors.black),
                       ),
                       const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _emailController,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.grey[200],
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
+                      // Ajuste o width do TextFormField
+                      SizedBox(
+                        width: double.infinity, // Ocupa toda a largura disponível
+                        child: TextFormField(
+                          controller: _emailController,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.grey[200],
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(color: Colors.blue),
+                            ),
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: Colors.blue),
-                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Por favor, insira o seu e-mail';
+                            } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
+                              return 'Por favor, insira um e-mail válido';
+                            }
+                            return null;
+                          },
                         ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Por favor, insira o seu e-mail';
-                          } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                            return 'Por favor, insira um e-mail válido';
-                          }
-                          return null;
-                        },
                       ),
                       const SizedBox(height: 32),
                       _loading
@@ -129,7 +132,7 @@ class _RecoverPasswordState extends State<RecoverPassword> {
                                 style: TextStyle(color: Colors.white),
                               ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color.fromARGB(255, 2, 70, 216),
+                                backgroundColor: Colors.blue,
                                 padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
@@ -144,6 +147,7 @@ class _RecoverPasswordState extends State<RecoverPassword> {
           ),
         ),
       ),
+      backgroundColor: Colors.white, // Fundo branco
     );
   }
 }
