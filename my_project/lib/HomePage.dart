@@ -60,7 +60,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: true, // Garante apenas uma seta de voltar
+        automaticallyImplyLeading: false, // Garante apenas uma seta de voltar
         elevation: 0,
         actions: <Widget>[
           IconButton(
