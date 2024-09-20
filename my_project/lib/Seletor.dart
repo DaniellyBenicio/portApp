@@ -3,18 +3,18 @@ import 'Login.dart';
 import 'Register.dart'; // Importa a tela de registro
 
 class Seletor extends StatelessWidget {
-  const Seletor({Key? key}) : super(key: key);
+  const Seletor({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: UserSelectionBody(),
     );
   }
 }
 
 class UserSelectionBody extends StatelessWidget {
-  const UserSelectionBody({Key? key}) : super(key: key);
+  const UserSelectionBody({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +22,7 @@ class UserSelectionBody extends StatelessWidget {
       padding: const EdgeInsets.all(16.0),
       child: Center(
         child: ConstrainedBox(
-          constraints: BoxConstraints(
+          constraints: const BoxConstraints(
             maxWidth: 600, 
           ),
           child: Column(
@@ -55,7 +55,7 @@ class UserSelectionBody extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => Login(userType: 'Aluno'),
+                          builder: (context) => const Login(userType: 'Aluno'),
                         ),
                       );
                     },
@@ -68,7 +68,7 @@ class UserSelectionBody extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => Login(userType: 'Professor'),
+                          builder: (context) => const Login(userType: 'Professor'),
                         ),
                       );
                     },
@@ -108,7 +108,7 @@ class UserTypeCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 40,
-                backgroundColor: Colors.blue,
+                backgroundColor: const Color.fromRGBO(18, 86, 143, 1), 
                 child: Icon(
                   icon,
                   size: 50,
