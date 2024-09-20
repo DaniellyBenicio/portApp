@@ -45,7 +45,7 @@ class _RegisterState extends State<Register> {
           );
 
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Cadastro realizado com sucesso!')),
+            const SnackBar(content: Text('Cadastro realizado com sucesso!')),
           );
 
           Navigator.pop(context);
@@ -61,7 +61,7 @@ class _RegisterState extends State<Register> {
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('As senhas não coincidem')),
+        const SnackBar(content: Text('As senhas não coincidem')),
       );
     }
   }
@@ -71,19 +71,19 @@ class _RegisterState extends State<Register> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: const Color.fromRGBO(18, 86, 143, 1),
         elevation: 0,
       ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(12.0), // Diminui o padding
           child: Container(
-            constraints: BoxConstraints(maxWidth: 400),
+            constraints: const BoxConstraints(maxWidth: 400),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -156,14 +156,14 @@ class _RegisterState extends State<Register> {
                 ElevatedButton(
                   onPressed: _isLoading ? null : _register,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
+                    backgroundColor: const Color.fromRGBO(18, 86, 143, 1),
                     padding: const EdgeInsets.symmetric(vertical: 16), // Diminui o padding vertical
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                   child: _isLoading 
-                      ? CircularProgressIndicator(color: Colors.white) 
+                      ? const CircularProgressIndicator(color: Colors.white) 
                       : const Text(
                           'Cadastrar',
                           style: TextStyle(color: Colors.white),
@@ -190,7 +190,7 @@ class _RegisterState extends State<Register> {
       children: [
         Text(
           label,
-          style: TextStyle(fontSize: 16, color: Colors.black),
+          style: const TextStyle(fontSize: 16, color: Colors.black),
         ),
         const SizedBox(height: 4), // Menos espaço
         TextField(
@@ -200,7 +200,7 @@ class _RegisterState extends State<Register> {
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Colors.blue),
+              borderSide: const BorderSide(color: Color.fromRGBO(18, 86, 143, 1), ),
             ),
             suffixIcon: isPassword
                 ? IconButton(
