@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:my_project/services/firestore_service.dart'; // Corrija o caminho para o seu serviço Firestore
+import 'package:my_project/services/firestore_service.dart';
 
 class Register extends StatefulWidget {
   final String userType;
@@ -18,43 +18,50 @@ class _RegisterState extends State<Register> {
   final _confirmPasswordController = TextEditingController();
   final _additionalInfoController = TextEditingController();
 
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
+  bool _isLoading = false;
+
   Future<void> _register() async {
     if (_passwordController.text == _confirmPasswordController.text) {
+      setState(() {
+        _isLoading = true;
+      });
+
       try {
-        // Crie o usuário com FirebaseAuth
         UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: _emailController.text,
           password: _passwordController.text,
         );
 
-        // Defina o ID do usuário
         final uid = userCredential.user?.uid;
 
         if (uid != null) {
-          // Adiciona o usuário usando FirestoreService
           await FirestoreService().addUser(
-            _emailController.text,
-            _nameController.text,
-            widget.userType,
-            _additionalInfoController.text, // Ano de ingresso ou formação
+            email: _emailController.text,
+            nome: _nameController.text,
+            tipo: widget.userType,
+            infoAdicional: widget.userType == 'Aluno' ? null : _additionalInfoController.text,
           );
 
-          // Mensagem de sucesso
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Registro realizado com sucesso!')),
+            const SnackBar(content: Text('Cadastro realizado com sucesso!')),
           );
 
-          Navigator.pop(context); // Navega de volta após o registro
+          Navigator.pop(context);
         }
       } catch (e) {
-        // Mensagem de erro
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao registrar: ${e.toString()}')),
+          SnackBar(content: Text('Erro ao cadastrar: ${e.toString()}')),
         );
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('As senhas não coincidem')),
+        const SnackBar(content: Text('As senhas não coincidem')),
       );
     }
   }
@@ -63,47 +70,152 @@ class _RegisterState extends State<Register> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Registro'),
-        backgroundColor: Colors.blue,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        backgroundColor: const Color.fromRGBO(18, 86, 143, 1),
+        elevation: 0,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(labelText: 'Nome Completo'),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(12.0), // Diminui o padding
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Registre-se com e-mail',
+                  style: TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 10), // Menos espaço
+                const Text(
+                  'Crie a sua conta para começar a usar o PortApp.',
+                  style: TextStyle(fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8), // Menos espaço
+                _buildTextField(
+                  controller: _nameController,
+                  label: 'Nome Completo',
+                  isPassword: false,
+                ),
+                const SizedBox(height: 8), // Menos espaço
+                _buildTextField(
+                  controller: _emailController,
+                  label: 'Email',
+                  isPassword: false,
+                ),
+                const SizedBox(height: 8), // Menos espaço
+                _buildTextField(
+                  controller: _passwordController,
+                  label: 'Senha',
+                  isPassword: true,
+                  obscureText: _obscurePassword,
+                  onVisibilityChanged: (isVisible) {
+                    setState(() {
+                      _obscurePassword = !isVisible;
+                    });
+                  },
+                  onSubmitted: (value) {
+                    FocusScope.of(context).nextFocus();
+                  },
+                ),
+                const SizedBox(height: 8), // Menos espaço
+                _buildTextField(
+                  controller: _confirmPasswordController,
+                  label: 'Confirmar Senha',
+                  isPassword: true,
+                  obscureText: _obscureConfirmPassword,
+                  onVisibilityChanged: (isVisible) {
+                    setState(() {
+                      _obscureConfirmPassword = !isVisible;
+                    });
+                  },
+                  onSubmitted: (value) {
+                    _register();
+                  },
+                ),
+                if (widget.userType == 'Professor') ...[
+                  const SizedBox(height: 8), // Menos espaço
+                  _buildTextField(
+                    controller: _additionalInfoController,
+                    label: 'Formação',
+                    isPassword: false,
+                    onSubmitted: (value) {
+                      _register();
+                    },
+                  ),
+                ],
+                const SizedBox(height: 12), // Menos espaço
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _register,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromRGBO(18, 86, 143, 1),
+                    padding: const EdgeInsets.symmetric(vertical: 16), // Diminui o padding vertical
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: _isLoading 
+                      ? const CircularProgressIndicator(color: Colors.white) 
+                      : const Text(
+                          'Cadastrar',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                ),
+              ],
             ),
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: 'Email'),
-            ),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: InputDecoration(labelText: 'Senha'),
-            ),
-            TextField(
-              controller: _confirmPasswordController,
-              obscureText: true,
-              decoration: InputDecoration(labelText: 'Confirmar Senha'),
-            ),
-            TextField(
-              controller: _additionalInfoController,
-              decoration: InputDecoration(
-                labelText: widget.userType == 'aluno' ? 'Ano de Ingresso' : 'Formação',
-              ),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _register,
-              child: Text('Registrar'),
-            ),
-          ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required bool isPassword,
+    bool obscureText = false,
+    ValueChanged<bool>? onVisibilityChanged,
+    ValueChanged<String>? onSubmitted,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 16, color: Colors.black),
+        ),
+        const SizedBox(height: 4), // Menos espaço
+        TextField(
+          controller: controller,
+          obscureText: isPassword ? obscureText : false,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color.fromRGBO(18, 86, 143, 1), ),
+            ),
+            suffixIcon: isPassword
+                ? IconButton(
+                    icon: Icon(obscureText ? Icons.visibility_off : Icons.visibility),
+                    onPressed: () {
+                      if (onVisibilityChanged != null) {
+                        onVisibilityChanged(obscureText);
+                      }
+                    },
+                  )
+                : null,
+          ),
+          onSubmitted: onSubmitted,
+        ),
+      ],
     );
   }
 }

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:my_project/iconsPortfolio.dart';
 import 'menu.dart';
-// Importe o arquivo onde o Menu está definido
+import 'student_pages.dart';
+import 'teacher_pages.dart';
+import 'settings_page.dart';
+import 'disciplinesPage.dart'; 
+
 
 class HomePage extends StatefulWidget {
-  final String userType;
+  final String userType; // aluno ou professor
 
   const HomePage({Key? key, required this.userType}) : super(key: key);
 
@@ -15,27 +19,41 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
 
-  final List<Widget> _pages = [
-    PortfolioPage(),
-    NotificationsPage(),
-    SettingsPage(),
-  ];
+  List<Widget> _getPages() {
+    if (widget.userType == 'Aluno') {
+      return [
+        StudentPortfolioPage(),
+        DisciplinesPage(),
+        SettingsPage(userType: widget.userType),
+      ];
+    } else if (widget.userType == 'Professor') {
+      return [
+        TeacherPortfolioPage(),
+        DisciplinesPage(),
+        SettingsPage(userType: widget.userType),
+      ];
+    } else {
+      return [
+        Center(child: Text('Tipo de usuário inválido')),
+      ];
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
       _currentIndex = index;
     });
 
-    // Navegação entre páginas
+    // Navegação entre páginas (use pushNamed para evitar substituição completa)
     switch (index) {
       case 0:
-        Navigator.pushReplacementNamed(context, '/HomePage');
+        Navigator.pushNamed(context, '/HomePage');
         break;
       case 1:
-        Navigator.pushReplacementNamed(context, '/notifications');
+        Navigator.pushNamed(context, '/disciplinas');
         break;
       case 2:
-        Navigator.pushReplacementNamed(context, '/settings');
+        Navigator.pushNamed(context, '/settings');
         break;
     }
   }
@@ -44,11 +62,12 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Perfil'),
+        automaticallyImplyLeading: false, // Garante apenas uma seta de voltar
+        elevation: 0,
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.notifications),
-            tooltip: 'Notifications',
+            tooltip: 'Notificações',
             onPressed: () {
               Navigator.pushReplacementNamed(context, '/notifications');
             },
@@ -59,10 +78,11 @@ class _HomePageState extends State<HomePage> {
         currentIndex: _currentIndex,
         onItemTapped: _onItemTapped,
       ),
-      body: _pages[_currentIndex],
+      body: _getPages()[_currentIndex],
     );
   }
 }
+<<<<<<< HEAD
 
 
 class PortfolioPage extends StatelessWidget {
@@ -128,3 +148,5 @@ class SettingsPage extends StatelessWidget {
     return Center(child: Text('Configurações Page'));
   }
 }
+=======
+>>>>>>> 9b64202829c591b70b66a6ae79629bfc4d4efd45
