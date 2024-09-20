@@ -92,13 +92,15 @@ class _LoginState extends State<Login> {
         ),
         backgroundColor: Colors.blue,
         elevation: 0,
+        
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
+            const SizedBox(height: 35), 
+            const Text(
               'Entre com E-mail',
               style: TextStyle(
                 fontSize: 24,
@@ -107,9 +109,9 @@ class _LoginState extends State<Login> {
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 8),
-            Text(
-              'Insira sua conta de e-mail e senha para acessar sua conta.',
+            const SizedBox(height: 8),
+            const Text(
+              'Faça login com o seu e-mail e senha para acessar sua conta.',
               style: TextStyle(fontSize: 16),
               textAlign: TextAlign.center,
             ),
