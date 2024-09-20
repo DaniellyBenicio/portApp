@@ -3,6 +3,7 @@ import 'menu.dart';
 import 'student_pages.dart';
 import 'teacher_pages.dart';
 import 'settings_page.dart';
+import 'disciplinesPage.dart'; 
 
 
 class HomePage extends StatefulWidget {
@@ -21,13 +22,13 @@ class _HomePageState extends State<HomePage> {
     if (widget.userType == 'Aluno') {
       return [
         StudentPortfolioPage(),
-        StudentSubjectsPage(),
+        DisciplinesPage(),
         SettingsPage(userType: widget.userType),
       ];
     } else if (widget.userType == 'Professor') {
       return [
         TeacherPortfolioPage(),
-        TeacherSubjectsPage(),
+        DisciplinesPage(),
         SettingsPage(userType: widget.userType),
       ];
     } else {
