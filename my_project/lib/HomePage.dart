@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_project/iconsPortfolio.dart';
 import 'menu.dart';
 // Importe o arquivo onde o Menu está definido
 
@@ -63,61 +64,56 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+
 class PortfolioPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      // Alinha os widgets à esquerda
-      children: <Widget>[
-        Container(
-          margin: EdgeInsets.only(
-            left: 16.0,
-            top: 16.0,
-            right: 16.0,
-            bottom: 16.0,
-    ),
-
-          child: TextField(
-            decoration: InputDecoration(
-              labelText: 'Digite o nome da disciplina', // Texto do rótulo
-              border: OutlineInputBorder(), // Borda ao redor da caixa de texto
-              suffixIcon: Icon(
-                  Icons.search), // Ícone de pesquisa dentro da caixa de texto
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Meus Portifólios',
+          textAlign: TextAlign.left,
+          style: TextStyle(
+            fontSize: 36,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            margin: EdgeInsets.all(16.0),
+            child: TextField(
+              decoration: InputDecoration(
+                labelText: 'Digite o nome da disciplina',
+                border: OutlineInputBorder(),
+                suffixIcon: Icon(Icons.search),
+              ),
             ),
           ),
-        ),
-        Container(
-          margin: EdgeInsets.only(
-            left: 16.0,
-            top: 0.0,
-            right: 16.0,
-            bottom: 0.0,
-          ),
-          child: Text(
-            'Meus Portifólios - Amanda',
-            textAlign: TextAlign.left, // Define o alinhamento do texto
-            style: TextStyle(
-              fontSize: 36,
-              fontWeight: FontWeight.bold,
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
+                  // Adiciona o widget IconPortfolio com a função onTapPortfolio
+                  for (int i = 0; i < 1; i++) // Substitua 6 pelo número desejado
+                    IconPortfolio(
+                      onTapPortfolio: (index) {
+                        // Define o comportamento ao clicar em um portfólio
+                        print('Portfólio ${index + 1} clicado');
+                      },
+                    ),
+                ],
+              ),
             ),
           ),
-        ),
-        Container(
-          margin: EdgeInsets.only(
-            left: 16.0,
-            top: 16.0,
-            right: 16.0,
-            bottom: 16.0,
-          ),
-          child: Text(
-            'Protifolios'
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
+
 
 class NotificationsPage extends StatelessWidget {
   @override
