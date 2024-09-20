@@ -56,7 +56,7 @@ class _RecoverPasswordState extends State<RecoverPassword> {
             Navigator.pop(context); // Navega de volta
           },
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: const Color.fromRGBO(18, 86, 143, 1)
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -72,7 +72,7 @@ class _RecoverPasswordState extends State<RecoverPassword> {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.blue,
+                    color: Color.fromRGBO(18, 86, 143, 1), 
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -109,7 +109,7 @@ class _RecoverPasswordState extends State<RecoverPassword> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: Colors.blue),
+                              borderSide: const BorderSide(color: Color.fromRGBO(18, 86, 143, 1),),
                             ),
                           ),
                           validator: (value) {
@@ -127,16 +127,16 @@ class _RecoverPasswordState extends State<RecoverPassword> {
                           ? const Center(child: CircularProgressIndicator())
                           : ElevatedButton(
                               onPressed: _resetPassword,
-                              child: const Text(
-                                'Enviar link de recuperação',
-                                style: TextStyle(color: Colors.white),
-                              ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue,
+                                backgroundColor: const Color.fromRGBO(18, 86, 143, 1),
                                 padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
+                              ),
+                              child: const Text(
+                                'Enviar link de recuperação',
+                                style: TextStyle(color: Colors.white),
                               ),
                             ),
                     ],
