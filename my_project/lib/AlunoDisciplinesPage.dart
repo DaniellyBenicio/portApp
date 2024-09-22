@@ -16,9 +16,7 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
   Future<void> _buscarDisciplinasPorNome() async {
     final nomeDisciplina = nomeController.text.trim();
     if (nomeDisciplina.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Por favor, insira um nome de disciplina')),
-      );
+      _showSnackBar('Por favor, insira um nome de disciplina');
       return;
     }
 
@@ -29,9 +27,7 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Usuário não autenticado')),
-        );
+        _showSnackBar('Usuário não autenticado');
         return;
       }
 
@@ -50,15 +46,11 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
         }).toList();
         nomeController.clear(); // Limpar campo após a busca
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Disciplina não encontrada')),
-        );
+        _showSnackBar('Disciplina não encontrada');
       }
     } catch (e) {
       print('Erro ao buscar disciplinas: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao buscar disciplinas')),
-      );
+      _showSnackBar('Erro ao buscar disciplinas');
     } finally {
       setState(() {
         loading = false;
@@ -69,25 +61,20 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
   Future<void> _buscarDisciplinaPorCodigo() async {
     final codigoAcesso = codigoController.text.trim();
     if (codigoAcesso.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Por favor, insira um código de acesso')),
-      );
+      _showSnackBar('Por favor, insira um código de acesso');
       return;
     }
 
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Usuário não autenticado')),
-        );
+        _showSnackBar('Usuário não autenticado');
         return;
       }
 
       final snapshot = await FirebaseFirestore.instance
           .collection('Disciplinas')
           .where('codigoAcesso', isEqualTo: codigoAcesso)
-          .where('professorUid', isEqualTo: user.uid)
           .get();
 
       if (snapshot.docs.isNotEmpty) {
@@ -104,16 +91,18 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
         );
         codigoController.clear(); // Limpar campo após a busca
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Código de acesso inválido ou disciplina não encontrada')),
-        );
+        _showSnackBar('Código de acesso inválido ou disciplina não encontrada');
       }
     } catch (e) {
       print('Erro ao buscar disciplina: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erro ao buscar disciplina')),
-      );
+      _showSnackBar('Erro ao buscar disciplina');
     }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
@@ -127,6 +116,7 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
         padding: const EdgeInsets.all(16.0),
         child: Row(
           children: [
+            // Parte de busca por nome
             Expanded(
               flex: 2,
               child: Column(
@@ -172,6 +162,7 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
               ),
             ),
             SizedBox(width: 16),
+            // Parte de busca por código de acesso
             Expanded(
               flex: 1,
               child: Column(
@@ -189,12 +180,14 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
                   SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _buscarDisciplinaPorCodigo,
-                    child: Text('Acessar Disciplina'),
+                    child: Text('Entrar na Disciplina'),
                   ),
                   SizedBox(height: 16),
                   Expanded(
                     child: Center(
-                      child: disciplinas.isEmpty ? Text('Você ainda não está matriculado em nenhuma disciplina.') : Container(),
+                      child: disciplinas.isEmpty
+                          ? Text('Você ainda não está matriculado em nenhuma disciplina.')
+                          : Container(),
                     ),
                   ),
                 ],

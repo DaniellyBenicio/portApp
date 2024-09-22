@@ -147,4 +147,47 @@ class FirestoreService {
     print('Erro ao inscrever aluno: $e');
   }
 }
+
+Future<List<Map<String, dynamic>>> getDisciplinasMatriculadas(String alunoUid) async {
+  try {
+    final snapshot = await _db.collection('Disciplinas').where('alunos.$alunoUid', isEqualTo: true).get();
+
+    return snapshot.docs.map((doc) {
+      return {
+        'id': doc.id,
+        ...doc.data() as Map<String, dynamic>,
+      };
+    }).toList();
+  } catch (e) {
+    print('Erro ao buscar disciplinas matriculadas: $e');
+    return [];
+  }
+}
+
+Future<void> adicionarAtividadeOuPortfolio({
+  required String disciplinaId,
+  required String titulo,
+  required String descricao,
+  required String professorUid,
+  required String tipoArquivo, 
+  required bool isPortfolio, 
+}) async {
+  try {
+    final collectionName = isPortfolio ? 'Portfolios' : 'Atividades';
+    await _db.collection('Disciplinas')
+      .doc(disciplinaId)
+      .collection(collectionName)
+      .add({
+        'titulo': titulo,
+        'descricao': descricao,
+        'professorUid': professorUid,
+        'tipoArquivo': tipoArquivo, // Adiciona o tipo de arquivo
+      });
+    print('Atividade/Portfólio adicionado com sucesso.');
+  } catch (e) {
+    print('Erro ao adicionar atividade/portfólio: $e');
+  }
+}
+
+
 }

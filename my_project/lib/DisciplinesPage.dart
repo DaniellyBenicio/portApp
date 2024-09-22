@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:my_project/services/firestore_service.dart';
 import 'package:flutter/services.dart';
+import 'ActivitiesPage.dart';
 
 class DisciplinesPage extends StatefulWidget {
   @override
@@ -17,14 +18,14 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
   @override
   void initState() {
     super.initState();
-    _getCurrentUserUid(); //Busca o UID do professor ao iniciar
+    _getCurrentUserUid(); // Busca o UID do professor ao iniciar
     _fetchDisciplinas();
   }
 
   void _getCurrentUserUid() {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
-      professorUid = user.uid; //Armazena o UID do professor autenticado
+      professorUid = user.uid; // Armazena o UID do professor autenticado
       print(professorUid);
     } else {
       print('Nenhum usuário autenticado');
@@ -32,12 +33,12 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
   }
 
   Future<void> _fetchDisciplinas() async {
-    if (professorUid == null) return; 
+    if (professorUid == null) return;
 
     try {
       final snapshot = await FirebaseFirestore.instance
           .collection('Disciplinas')
-          .where('professorUid', isEqualTo: professorUid) //Filtra pelas disciplinas do professor
+          .where('professorUid', isEqualTo: professorUid) // Filtra pelas disciplinas do professor
           .get();
 
       setState(() {
@@ -116,10 +117,10 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
                 if (codigoAcesso != null) {
                   setState(() {
                     disciplinas.add({
-                      'id': 'novo_id', 
+                      'id': 'novo_id',
                       'nome': nomeController.text,
                       'descricao': descricaoController.text,
-                      'codigoAcesso': codigoAcesso, 
+                      'codigoAcesso': codigoAcesso,
                     });
                   });
                   showDialog(
@@ -239,7 +240,7 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); 
+                Navigator.of(context).pop();
               },
               child: Text('Cancelar'),
             ),
@@ -257,7 +258,7 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
                 } catch (e) {
                   print('Erro ao deletar disciplina: $e');
                 }
-                Navigator.of(context).pop(); 
+                Navigator.of(context).pop();
               },
               child: Text('Sim'),
             ),
@@ -280,46 +281,57 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
           itemCount: disciplinas.length,
           itemBuilder: (context, index) {
             final disciplina = disciplinas[index];
-            return Card(
-              margin: const EdgeInsets.symmetric(vertical: 8.0),
-              elevation: 4,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      disciplina['nome'],
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      disciplina['descricao'],
-                      textAlign: TextAlign.justify,
-                    ),
-                    SizedBox(height: 8),
-                    if (disciplina['codigoAcesso'] != null && disciplina['codigoAcesso'].isNotEmpty) 
+            return GestureDetector(
+              onTap: () {
+                // Navegar para a ActivitiesPage ao clicar na disciplina
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ActivitiesPage(disciplinaId: disciplina['id']),
+                  ),
+                );
+              },
+              child: Card(
+                margin: const EdgeInsets.symmetric(vertical: 8.0),
+                elevation: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        'Código de Acesso: ${disciplina['codigoAcesso']}',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        disciplina['nome'],
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                    SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.edit),
-                          onPressed: () => _editarDisciplina(disciplina),
-                          tooltip: 'Editar',
+                      SizedBox(height: 8),
+                      Text(
+                        disciplina['descricao'],
+                        textAlign: TextAlign.justify,
+                      ),
+                      SizedBox(height: 8),
+                      if (disciplina['codigoAcesso'] != null && disciplina['codigoAcesso'].isNotEmpty) 
+                        Text(
+                          'Código de Acesso: ${disciplina['codigoAcesso']}',
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
-                        IconButton(
-                          icon: Icon(Icons.delete, color: Colors.red),
-                          onPressed: () => _deletarDisciplina(disciplina['id']),
-                          tooltip: 'Deletar',
-                        ),
-                      ],
-                    ),
-                  ],
+                      SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.edit),
+                            onPressed: () => _editarDisciplina(disciplina),
+                            tooltip: 'Editar',
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => _deletarDisciplina(disciplina['id']),
+                            tooltip: 'Deletar',
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -328,7 +340,7 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _criarDisciplina,
-        tooltip: 'Adicionar Disciplina',
+        tooltip: 'Criar Disciplina',
         child: Icon(Icons.add),
       ),
     );
