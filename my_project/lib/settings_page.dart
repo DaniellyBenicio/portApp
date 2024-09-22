@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'seletor.dart'; // Certifique-se de importar a classe Seletor
+import 'seletor.dart'; 
 
 class SettingsPage extends StatelessWidget {
   final String userType;
 
-  SettingsPage({required this.userType});
+  const SettingsPage({super.key, required this.userType});
 
   Future<void> _showLogoutConfirmationDialog(BuildContext context) async {
     return showDialog<void>(
       context: context,
-      barrierDismissible: false, // Impede o usuário de fechar o diálogo tocando fora dele
+      barrierDismissible: false, 
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Confirmar Saída'),
@@ -28,7 +28,7 @@ class SettingsPage extends StatelessWidget {
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (context) => Seletor()),
-                  (route) => false, // Remove todas as rotas anteriores
+                  (route) => false, 
                 );
               },
             ),
@@ -52,8 +52,8 @@ class SettingsPage extends StatelessWidget {
           children: <Widget>[
             const Row(
               children: <Widget>[
-                Icon(Icons.person, size: 28), // Mini ícone de conta
-                SizedBox(width: 8), // Espaço entre o ícone e o texto
+                Icon(Icons.person, size: 28), 
+                SizedBox(width: 8),
                 Text(
                   'Conta',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -87,7 +87,7 @@ class SettingsPage extends StatelessWidget {
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.info), // Ícone para informações
+              leading: const Icon(Icons.info), 
               title: Text('Sobre Nós'),
               onTap: () {
                 Navigator.pushNamed(context, '/aboutUs');
@@ -97,7 +97,7 @@ class SettingsPage extends StatelessWidget {
             Center(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue, // Botão em azul
+                  backgroundColor: Colors.blue, 
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -105,7 +105,7 @@ class SettingsPage extends StatelessWidget {
                   minimumSize: Size(120, 40),
                 ),
                 onPressed: () {
-                  _showLogoutConfirmationDialog(context); // Exibe a confirmação de logout
+                  _showLogoutConfirmationDialog(context); 
                 },
                 child: Text('Sair'),
               ),

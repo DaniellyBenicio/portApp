@@ -5,12 +5,13 @@ import 'student_pages.dart';
 import 'teacher_pages.dart';
 import 'settings_page.dart';
 import 'disciplinesPage.dart'; 
+import 'AlunoDisciplinesPage.dart';
 
 
 class HomePage extends StatefulWidget {
   final String userType; // aluno ou professor
 
-  const HomePage({Key? key, required this.userType}) : super(key: key);
+  const HomePage({super.key, required this.userType});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -23,18 +24,18 @@ class _HomePageState extends State<HomePage> {
     if (widget.userType == 'Aluno') {
       return [
         StudentPortfolioPage(),
-        DisciplinesPage(),
+        AlunoDisciplinesPage(),
         SettingsPage(userType: widget.userType),
       ];
     } else if (widget.userType == 'Professor') {
       return [
-        TeacherPortfolioPage(),
+        const TeacherPortfolioPage(),
         DisciplinesPage(),
         SettingsPage(userType: widget.userType),
       ];
     } else {
       return [
-        Center(child: Text('Tipo de usuário inválido')),
+        const Center(child: Text('Tipo de usuário inválido')),
       ];
     }
   }
@@ -44,7 +45,6 @@ class _HomePageState extends State<HomePage> {
       _currentIndex = index;
     });
 
-    // Navegação entre páginas (use pushNamed para evitar substituição completa)
     switch (index) {
       case 0:
         Navigator.pushNamed(context, '/HomePage');
@@ -62,7 +62,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false, // Garante apenas uma seta de voltar
+        automaticallyImplyLeading: false, 
         elevation: 0,
         actions: <Widget>[
           IconButton(
@@ -82,15 +82,15 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-<<<<<<< HEAD
-
 
 class PortfolioPage extends StatelessWidget {
+  const PortfolioPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Meus Portifólios',
           textAlign: TextAlign.left,
           style: TextStyle(
@@ -104,7 +104,7 @@ class PortfolioPage extends StatelessWidget {
         children: <Widget>[
           Container(
             margin: EdgeInsets.all(16.0),
-            child: TextField(
+            child: const TextField(
               decoration: InputDecoration(
                 labelText: 'Digite o nome da disciplina',
                 border: OutlineInputBorder(),
@@ -116,11 +116,9 @@ class PortfolioPage extends StatelessWidget {
             child: SingleChildScrollView(
               child: Column(
                 children: <Widget>[
-                  // Adiciona o widget IconPortfolio com a função onTapPortfolio
                   for (int i = 0; i < 1; i++) // Substitua 6 pelo número desejado
                     IconPortfolio(
                       onTapPortfolio: (index) {
-                        // Define o comportamento ao clicar em um portfólio
                         print('Portfólio ${index + 1} clicado');
                       },
                     ),
@@ -136,17 +134,10 @@ class PortfolioPage extends StatelessWidget {
 
 
 class NotificationsPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(child: Text('Notificações Page'));
-  }
-}
+  const NotificationsPage({super.key});
 
-class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text('Configurações Page'));
+    return const Center(child: Text('Notificações Page'));
   }
 }
-=======
->>>>>>> 9b64202829c591b70b66a6ae79629bfc4d4efd45

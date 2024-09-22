@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:my_project/services/firestore_service.dart';
 import 'package:flutter/services.dart';
 
@@ -11,16 +12,34 @@ class DisciplinesPage extends StatefulWidget {
 class _DisciplinesPageState extends State<DisciplinesPage> {
   final FirestoreService _firestoreService = FirestoreService();
   List<Map<String, dynamic>> disciplinas = [];
+  String? professorUid;
 
   @override
   void initState() {
     super.initState();
+    _getCurrentUserUid(); //Busca o UID do professor ao iniciar
     _fetchDisciplinas();
   }
 
+  void _getCurrentUserUid() {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      professorUid = user.uid; //Armazena o UID do professor autenticado
+      print(professorUid);
+    } else {
+      print('Nenhum usuário autenticado');
+    }
+  }
+
   Future<void> _fetchDisciplinas() async {
+    if (professorUid == null) return; 
+
     try {
-      final snapshot = await FirebaseFirestore.instance.collection('Disciplinas').get();
+      final snapshot = await FirebaseFirestore.instance
+          .collection('Disciplinas')
+          .where('professorUid', isEqualTo: professorUid) //Filtra pelas disciplinas do professor
+          .get();
+
       setState(() {
         disciplinas = snapshot.docs.map((doc) {
           return {
@@ -76,33 +95,41 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
                   return;
                 }
 
+                if (professorUid == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Usuário não autenticado!'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                  return;
+                }
+
                 String? codigoAcesso = await _firestoreService.addDisciplina(
                   nome: nomeController.text,
                   descricao: descricaoController.text,
-                  professorUid: 'uid_do_professor', 
+                  professorUid: professorUid!,
                 );
 
-                Navigator.of(context).pop(); 
+                Navigator.of(context).pop();
 
                 if (codigoAcesso != null) {
-
                   setState(() {
                     disciplinas.add({
                       'id': 'novo_id', 
                       'nome': nomeController.text,
                       'descricao': descricaoController.text,
-                      'codigoAcesso': codigoAcesso,
+                      'codigoAcesso': codigoAcesso, 
                     });
                   });
-
                   showDialog(
                     context: context,
                     builder: (context) {
                       return AlertDialog(
                         title: Text('Disciplina Criada'),
                         content: Container(
-                          width: 200, 
-                          height: 100, 
+                          width: 200,
+                          height: 100,
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -203,43 +230,42 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
   }
 
   void _deletarDisciplina(String disciplinaId) async {
-  showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: Text('Confirmar Exclusão'),
-        content: Text('Você realmente deseja deletar esta disciplina?'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(); // Fecha o diálogo
-            },
-            child: Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () async {
-              try {
-                await FirebaseFirestore.instance.collection('Disciplinas').doc(disciplinaId).delete();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Disciplina excluída com sucesso!'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-                _fetchDisciplinas();
-              } catch (e) {
-                print('Erro ao deletar disciplina: $e');
-              }
-              Navigator.of(context).pop(); // Fecha o diálogo após a exclusão
-            },
-            child: Text('Sim'),
-          ),
-        ],
-      );
-    },
-  );
-}
-
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Confirmar Exclusão'),
+          content: Text('Você realmente deseja deletar esta disciplina?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); 
+              },
+              child: Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () async {
+                try {
+                  await FirebaseFirestore.instance.collection('Disciplinas').doc(disciplinaId).delete();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Disciplina excluída com sucesso!'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                  _fetchDisciplinas();
+                } catch (e) {
+                  print('Erro ao deletar disciplina: $e');
+                }
+                Navigator.of(context).pop(); 
+              },
+              child: Text('Sim'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -302,8 +328,8 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _criarDisciplina,
-        backgroundColor: Colors.blueAccent,
-        child: Icon(Icons.add, size: 30),
+        tooltip: 'Adicionar Disciplina',
+        child: Icon(Icons.add),
       ),
     );
   }

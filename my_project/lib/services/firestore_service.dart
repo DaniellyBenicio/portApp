@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:math';
 
+
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
@@ -94,51 +95,56 @@ class FirestoreService {
   required String nome,
   required String descricao,
   required String professorUid,
+
   }) async {
     try {
-      String chaveAcesso = _gerarChaveAcesso();
+      String codigoAcesso = _gerarCodigoAcesso();
       await _db.collection('Disciplinas').add({
         'nome': nome,
         'descricao': descricao,
         'professorUid': professorUid,
-        'chaveAcesso': chaveAcesso,
+        'codigoAcesso': codigoAcesso,
       });
-      print('Disciplina adicionada com sucesso. Chave de acesso: $chaveAcesso');
-      return chaveAcesso; // Retorna a chave gerada
+      print('Disciplina adicionada com sucesso. Chave de acesso: $codigoAcesso');
+      return codigoAcesso; 
     } catch (e) {
       print('Erro ao adicionar disciplina: $e');
       return null;
     }
   }
   // Gera uma chave de acesso aleatória
-  String _gerarChaveAcesso() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  String _gerarCodigoAcesso() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#@_';
     final Random rand = Random();
     return List.generate(8, (index) => chars[rand.nextInt(chars.length)]).join();
   }
 
-  // Inscreve um aluno em uma disciplina se a chave de acesso for válida
-  Future<void> inscreverAluno(String disciplinaId, String alunoUid, String chaveAcesso) async {
-    try {
-      // Obtém a disciplina para verificar a chave de acesso
-      DocumentSnapshot disciplinaSnapshot = await _db.collection('Disciplinas').doc(disciplinaId).get();
+  Future<void> inscreverAluno(String disciplinaId, String alunoUid, String codigoAcesso) async {
+  try {
+    DocumentSnapshot disciplinaSnapshot = await _db.collection('Disciplinas').doc(disciplinaId).get();
 
-      if (disciplinaSnapshot.exists) {
-        String? chaveValida = disciplinaSnapshot['chaveAcesso'];
+    if (disciplinaSnapshot.exists) {
+      String? codigoValido = disciplinaSnapshot['codigoAcesso'];
+      if (codigoAcesso == codigoValido) {
+        DocumentSnapshot alunoSnapshot = await _db.collection('Disciplinas').doc(disciplinaId).collection('alunos').doc(alunoUid).get();
 
-        if (chaveAcesso == chaveValida) {
+        if (!alunoSnapshot.exists) {
           await _db.collection('Disciplinas').doc(disciplinaId).collection('alunos').doc(alunoUid).set({
             'status': 'inscrito',
+            'dataInscricao': FieldValue.serverTimestamp(), // Armazena a data da inscrição
           });
           print('Aluno inscrito na disciplina com sucesso.');
         } else {
-          print('Chave de acesso inválida.');
+          print('Aluno já está inscrito nesta disciplina.');
         }
       } else {
-        print('Disciplina não encontrada.');
+        print('Chave de acesso inválida.');
       }
-    } catch (e) {
-      print('Erro ao inscrever aluno: $e');
+    } else {
+      print('Disciplina não encontrada. ID: $disciplinaId'); 
     }
+  } catch (e) {
+    print('Erro ao inscrever aluno: $e');
   }
+}
 }

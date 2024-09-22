@@ -21,19 +21,3 @@ class TeacherPortfolioPage extends StatelessWidget {
     );
   }
 }
-
-// Teacher Subjects Page
-class TeacherSubjectsPage extends StatelessWidget {
-  const TeacherSubjectsPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Text(
-        'Teacher Subjects',
-        style: TextStyle(fontSize: 24),
-      ),
-    );
-  }
-}
-
