@@ -12,22 +12,22 @@ class SettingsPage extends StatelessWidget {
       barrierDismissible: false, 
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirmar Saída'),
-          content: Text('Você realmente deseja sair da sua conta?'),
+          title: const Text('Confirmar Saída'),
+          content: const Text('Você realmente deseja sair da sua conta?'),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancelar'),
+              child: const Text('Cancelar'),
               onPressed: () {
                 Navigator.of(context).pop(); // Fecha o diálogo
               },
             ),
             TextButton(
-              child: Text('Sair'),
+              child: const Text('Sair'),
               onPressed: () {
                 Navigator.of(context).pop(); // Fecha o diálogo
                 Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(builder: (context) => Seletor()),
+                  MaterialPageRoute(builder: (context) => const Seletor()),
                   (route) => false, 
                 );
               },
@@ -63,14 +63,14 @@ class SettingsPage extends StatelessWidget {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.edit),
-              title: Text('Editar Perfil'),
+              title: const Text('Editar Perfil'),
               onTap: () {
                 Navigator.pushNamed(context, '/editProfile');
               },
             ),
             ListTile(
-              leading: Icon(Icons.lock),
-              title: Text('Trocar Senha'),
+              leading: const Icon(Icons.lock),
+              title: const Text('Trocar Senha'),
               onTap: () {
                 Navigator.pushNamed(context, '/changePassword');
               },
@@ -88,7 +88,7 @@ class SettingsPage extends StatelessWidget {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.info), 
-              title: Text('Sobre Nós'),
+              title: const Text('Sobre Nós'),
               onTap: () {
                 Navigator.pushNamed(context, '/aboutUs');
               },
@@ -102,12 +102,12 @@ class SettingsPage extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  minimumSize: Size(120, 40),
+                  minimumSize: const Size(120, 40),
                 ),
                 onPressed: () {
                   _showLogoutConfirmationDialog(context); 
                 },
-                child: Text('Sair'),
+                child: const Text('Sair'),
               ),
             ),
           ],

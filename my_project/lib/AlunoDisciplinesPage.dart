@@ -109,7 +109,7 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(child: Text('Disciplinas')),
+        title: const Center(child: Text('Disciplinas')),
         backgroundColor: Colors.blue,
       ),
       body: Padding(
@@ -124,24 +124,24 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
                 children: [
                   TextField(
                     controller: nomeController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Busque por disciplina',
                       suffixIcon: Icon(Icons.search),
                       border: OutlineInputBorder(),
                     ),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: loading ? null : _buscarDisciplinasPorNome,
-                    child: loading ? CircularProgressIndicator() : Text('Buscar'),
+                    child: loading ? const CircularProgressIndicator() : const Text('Buscar'),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Expanded(
                     child: ListView.builder(
                       itemCount: disciplinas.length,
                       itemBuilder: (context, index) {
                         return Card(
-                          margin: EdgeInsets.symmetric(vertical: 8),
+                          margin: const EdgeInsets.symmetric(vertical: 8),
                           child: ListTile(
                             title: Text(disciplinas[index]['nome']),
                             subtitle: Text(disciplinas[index]['descricao']),
@@ -161,32 +161,32 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
                 ],
               ),
             ),
-            SizedBox(width: 16),
+            const SizedBox(width: 16),
             // Parte de busca por código de acesso
             Expanded(
               flex: 1,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Entrar em uma Disciplina pelo Código', style: TextStyle(fontSize: 18)),
-                  SizedBox(height: 8),
+                  const Text('Entrar em uma Disciplina pelo Código', style: TextStyle(fontSize: 18)),
+                  const SizedBox(height: 8),
                   TextField(
                     controller: codigoController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: 'Código de Acesso',
                       border: OutlineInputBorder(),
                     ),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _buscarDisciplinaPorCodigo,
-                    child: Text('Entrar na Disciplina'),
+                    child: const Text('Entrar na Disciplina'),
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Expanded(
                     child: Center(
                       child: disciplinas.isEmpty
-                          ? Text('Você ainda não está matriculado em nenhuma disciplina.')
+                          ? const Text('Você ainda não está matriculado em nenhuma disciplina.')
                           : Container(),
                     ),
                   ),
@@ -219,19 +219,19 @@ class DisciplinaDetalhesPage extends StatelessWidget {
           children: [
             Text(
               disciplina['nome'],
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               disciplina['descricao'],
-              style: TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
                 // Adicione uma ação para um botão, se necessário
               },
-              child: Text('Ação Adicional'),
+              child: const Text('Ação Adicional'),
             ),
           ],
         ),

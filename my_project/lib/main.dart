@@ -19,20 +19,22 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Seletor(), // Home permanece como Seletor
+      home: const Seletor(), // Home permanece como Seletor
       routes: {
         '/homeAluno': (context) => const HomePage(userType: 'Aluno'),
         '/homeProfessor': (context) => const HomePage(userType: 'Professor'),
-        '/settingsAluno': (context) => SettingsPage(userType: 'Aluno'), 
-        '/settingsProfessor': (context) => SettingsPage(userType: 'Professor'),
+        '/settingsAluno': (context) => const SettingsPage(userType: 'Aluno'), 
+        '/settingsProfessor': (context) => const SettingsPage(userType: 'Professor'),
         '/editProfile': (context) => EditProfilePage(),
         '/changePassword': (context) => ChangePasswordPage(),
         '/deleteAccount': (context) => DeleteAccountPage(),

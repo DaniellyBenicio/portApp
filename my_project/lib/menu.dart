@@ -5,10 +5,10 @@ class Menu extends StatelessWidget {
   final ValueChanged<int> onItemTapped;
 
   const Menu({
-    Key? key,
+    super.key,
     required this.currentIndex,
     required this.onItemTapped,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -16,8 +16,8 @@ class Menu extends StatelessWidget {
 
       currentIndex: currentIndex,
       onTap: onItemTapped,
-      selectedItemColor: Color.fromRGBO(19, 79, 145, 1), // Define a cor do item selecionado
-      unselectedItemColor: Color.fromRGBO(5, 4, 4, 0.5),
+      selectedItemColor: const Color.fromRGBO(19, 79, 145, 1), // Define a cor do item selecionado
+      unselectedItemColor: const Color.fromRGBO(5, 4, 4, 0.5),
       iconSize: 30, // Tamanho dos ícones
       selectedFontSize: 14, // Tamanho da fonte do item selecionado
       unselectedFontSize: 12, // Tamanho da fonte dos itens não selecionados

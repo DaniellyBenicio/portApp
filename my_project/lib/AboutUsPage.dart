@@ -18,9 +18,9 @@ class AboutUsPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             // App Title
-            Align(
+            const Align(
               alignment: Alignment.center,
-              child: const Text(
+              child: Text(
                 'PortApp',
                 style: TextStyle(
                   fontSize: 28,
@@ -30,9 +30,9 @@ class AboutUsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            Align(
+            const Align(
               alignment: Alignment.center,
-              child: const Text(
+              child: Text(
                 'PortApp é um aplicativo desenvolvido para o público da Educação de Jovens e Adultos - EJA.',
                 style: TextStyle(
                   fontSize: 16,
@@ -41,10 +41,10 @@ class AboutUsPage extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 20),
-            Align(
+            const SizedBox(height: 20),
+            const Align(
               alignment: Alignment.center,
-              child: const Text(
+              child: Text(
                 'Nosso Objetivo',
                 style: TextStyle(
                   fontSize: 24,
@@ -54,9 +54,9 @@ class AboutUsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            Align(
+            const Align(
               alignment: Alignment.center,
-              child: const Text(
+              child: Text(
                 'Proporcionar uma plataforma simples e acessível para auxiliar na educação e organização dos alunos e professores.',
                 style: TextStyle(
                   fontSize: 16,
@@ -66,9 +66,9 @@ class AboutUsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            Align(
+            const Align(
               alignment: Alignment.center,
-              child: const Text(
+              child: Text(
                 'Equipe de Desenvolvimento:',
                 style: TextStyle(
                   fontSize: 20,
@@ -80,9 +80,9 @@ class AboutUsPage extends StatelessWidget {
             const SizedBox(height: 10),
             _buildTeamMembers(),
             const SizedBox(height: 20),
-            Align(
+            const Align(
               alignment: Alignment.center,
-              child: const Text(
+              child: Text(
                 'Para mais informações, entre em contato conosco através do e-mail:',
                 style: TextStyle(
                   fontSize: 16,
@@ -91,9 +91,9 @@ class AboutUsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            Align(
+            const Align(
               alignment: Alignment.center,
-              child: const Text(
+              child: Text(
                 'contato@portapp.com',
                 style: TextStyle(
                   fontSize: 16,
@@ -126,7 +126,7 @@ class AboutUsPage extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(Icons.person, color: Colors.blue, size: 20),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               Text(
                 member,
                 style: const TextStyle(fontSize: 16),

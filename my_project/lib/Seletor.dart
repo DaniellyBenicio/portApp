@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'Login.dart';
-import 'Register.dart'; // Importa a tela de registro
 
 class Seletor extends StatelessWidget {
   const Seletor({super.key});

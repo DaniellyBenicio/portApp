@@ -2,19 +2,21 @@ import 'package:flutter/material.dart';
 
 // Student Portfolio Page
 class StudentPortfolioPage extends StatelessWidget {
+  const StudentPortfolioPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Container(
-          margin: EdgeInsets.only(
+          margin: const EdgeInsets.only(
             left: 16.0,
             top: 16.0,
             right: 16.0,
             bottom: 16.0,
           ),
-          child: TextField(
+          child: const TextField(
             decoration: InputDecoration(
               labelText: 'Digite o nome da disciplina', // Texto do rótulo
               border: OutlineInputBorder(), // Borda ao redor da caixa de texto
@@ -25,7 +27,7 @@ class StudentPortfolioPage extends StatelessWidget {
           ),
         ),
         Container(
-          margin: EdgeInsets.only(
+          margin: const EdgeInsets.only(
             left: 16.0,
             top: 0.0,
             right: 16.0,
@@ -59,6 +61,8 @@ class StudentPortfolioPage extends StatelessWidget {
 
 // Student Subjects Page
 class StudentSubjectsPage extends StatelessWidget {
+  const StudentSubjectsPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     // Exemplo de disciplinas
@@ -100,7 +104,7 @@ class StudentSubjectsPage extends StatelessWidget {
 class SubjectDetailsPage extends StatelessWidget {
   final String subject;
 
-  const SubjectDetailsPage({Key? key, required this.subject}) : super(key: key);
+  const SubjectDetailsPage({super.key, required this.subject});
 
   @override
   Widget build(BuildContext context) {

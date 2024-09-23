@@ -63,7 +63,7 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Criar Nova Disciplina'),
+          title: const Text('Criar Nova Disciplina'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

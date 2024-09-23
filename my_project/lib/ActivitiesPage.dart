@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+//import 'package:logger/logger.dart';
+
 
 class ActivitiesPage extends StatefulWidget {
   final String disciplinaId;
 
-  ActivitiesPage({required this.disciplinaId});
+  const ActivitiesPage({super.key, required this.disciplinaId});
 
   @override
   _ActivitiesPageState createState() => _ActivitiesPageState();
@@ -55,6 +57,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
         }).toList();
       });
     } catch (e) {
+      
       print('Erro ao buscar atividades: $e');
     }
   }
@@ -91,18 +94,18 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Adicionar Atividade/Portfólio'),
+          title: const Text('Adicionar Atividade/Portfólio'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: tituloController,
-                  decoration: InputDecoration(labelText: 'Título'),
+                  decoration: const InputDecoration(labelText: 'Título'),
                 ),
                 TextField(
                   controller: descricaoController,
-                  decoration: InputDecoration(labelText: 'Descrição'),
+                  decoration: const InputDecoration(labelText: 'Descrição'),
                 ),
                 DropdownButton<String>(
                   value: tipoArquivoSelecionado,
@@ -126,7 +129,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                   }).toList(),
                 ),
                 CheckboxListTile(
-                  title: Text('Adicionar ao Portfólio'),
+                  title: const Text('Adicionar ao Portfólio'),
                   value: isPortfolio,
                   onChanged: (bool? value) {
                     setState(() {
@@ -142,13 +145,13 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancelar'),
+              child: const Text('Cancelar'),
             ),
             TextButton(
               onPressed: () async {
                 if (tituloController.text.isEmpty || descricaoController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Título e descrição são obrigatórios!')),
+                    const SnackBar(content: const Text('Título e descrição são obrigatórios!')),
                   );
                   return;
                 }
@@ -178,7 +181,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
                 _fetchAtividades();
                 _fetchPortifolios();
               },
-              child: Text('Adicionar'),
+              child: const Text('Adicionar'),
             ),
           ],
         );
@@ -195,7 +198,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
           .doc(atividadeId)
           .delete();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Atividade deletada com sucesso!')),
+        const SnackBar(content: Text('Atividade deletada com sucesso!')),
       );
       _fetchAtividades();
     } catch (e) {
@@ -212,7 +215,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
           .doc(portfolioId)
           .delete();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Portfólio deletado com sucesso!')),
+        const SnackBar(content: Text('Portfólio deletado com sucesso!')),
       );
       _fetchPortifolios();
     } catch (e) {
@@ -224,7 +227,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Atividades e Portfólios'),
+        title: const Text('Atividades e Portfólios'),
         centerTitle: true,
       ),
       body: Padding(
@@ -235,32 +238,32 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
             ...atividades.map((atividade) {
               return Card(
                 elevation: 4,
-                margin: EdgeInsets.symmetric(vertical: 8.0),
+                margin: const EdgeInsets.symmetric(vertical: 8.0),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ListTile(
-                  title: Text(atividade['titulo'], style: TextStyle(fontWeight: FontWeight.bold)),
+                  title: Text(atividade['titulo'], style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Text(atividade['descricao']),
                   tileColor: Colors.blue[50],
                 ),
               );
             }).toList(),
             // Exibir portfólios
-            Divider(),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
+            const Divider(),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8.0),
               child: Text('Portfólios:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
             ),
             ...portifolios.map((portfolio) {
               return Card(
                 elevation: 4,
-                margin: EdgeInsets.symmetric(vertical: 8.0),
+                margin: const EdgeInsets.symmetric(vertical: 8.0),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: ListTile(
-                  title: Text(portfolio['titulo'], style: TextStyle(fontWeight: FontWeight.bold)),
+                  title: Text(portfolio['titulo'], style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Text(portfolio['descricao']),
                   tileColor: Colors.green[50],
                 ),
@@ -272,7 +275,7 @@ class _ActivitiesPageState extends State<ActivitiesPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: _adicionarAtividadeOuPortfolio,
         tooltip: 'Adicionar Atividade/Portfólio',
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }

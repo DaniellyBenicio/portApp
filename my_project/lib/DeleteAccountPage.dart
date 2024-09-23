@@ -22,17 +22,17 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirmação de Exclusão'),
-          content: Text('Tem certeza de que deseja excluir sua conta? Esta ação é irreversível.'),
+          title: const Text('Confirmação de Exclusão'),
+          content: const Text('Tem certeza de que deseja excluir sua conta? Esta ação é irreversível.'),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancelar'),
+              child: const Text('Cancelar'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: Text('Excluir'),
+              child: const Text('Excluir'),
               onPressed: () {
                 Navigator.of(context).pop();
                 _deleteAccount();
@@ -121,7 +121,7 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Excluir Conta'),
+        title: const Text('Excluir Conta'),
         centerTitle: true,
       ),
       body: Padding(
@@ -129,11 +129,11 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(
+            const Text(
               'Digite sua senha para confirmar a exclusão da conta:',
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _passwordController,
               obscureText: _obscurePassword,
@@ -152,22 +152,22 @@ class _DeleteAccountPageState extends State<DeleteAccountPage> {
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _showConfirmationDialog,
-              child: Text('Excluir Conta'),
+              child: const Text('Excluir Conta'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
-                minimumSize: Size(double.infinity, 50),
-                padding: EdgeInsets.symmetric(horizontal: 16),
+                minimumSize: const Size(double.infinity, 50),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
               ),
             ),
             if (_successMessage.isNotEmpty) ...[
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Text(
                 _successMessage,
-                style: TextStyle(color: Colors.green, fontSize: 16),
+                style: const TextStyle(color: Colors.green, fontSize: 16),
               ),
             ],
           ],
