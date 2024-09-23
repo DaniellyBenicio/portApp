@@ -49,6 +49,7 @@ class DefaultFirebaseOptions {
     }
   }
 
+  //Configurações do Firebase para a plataforma web
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyDTjwiDaACQTUlgzdMoWBw9uCtOFwkLcwc',
     appId: '1:132625793820:web:6fb4cb8458a4e1fcc9f0d9',
@@ -57,7 +58,8 @@ class DefaultFirebaseOptions {
     authDomain: 'portapp-561b2.firebaseapp.com',
     storageBucket: 'portapp-561b2.appspot.com',
   );
-
+  
+  //Configurações do Firebase para a plataforma Android
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDdMmPm5Q9lquSG1HtJgqUh5juLyNZchdM',
     appId: '1:132625793820:android:90d1496ec731b66cc9f0d9',

@@ -5,31 +5,33 @@ import 'package:firebase_auth/firebase_auth.dart';
 class PortfolioPage extends StatefulWidget {
   final String disciplinaId;
 
-  const PortfolioPage({super.key, required this.disciplinaId});
+  const PortfolioPage({super.key, required this.disciplinaId});//ID da disciplina associada ao portfólio
 
   @override
   _PortfolioPageState createState() => _PortfolioPageState();
 }
 
 class _PortfolioPageState extends State<PortfolioPage> {
-  List<Map<String, dynamic>> portfolios = [];
-  String? usuarioUid;
-  bool isProfessor = false;
+  List<Map<String, dynamic>> portfolios = []; //Lista para armazenar portfólios
+  String? usuarioUid; //UID do usuário atual
+  bool isProfessor = false; //Verifica se o usuário é um professor
 
   @override
   void initState() {
     super.initState();
-    _fetchPortfolios();
-    _getUsuarioUid();
+    _fetchPortfolios(); //Busca os portfólios na inicialização
+    _getUsuarioUid(); //Obtém o UID do usuário
   }
 
+  //Obtém o UID do usuário e verifica se é professor
   Future<void> _getUsuarioUid() async {
-    final user = FirebaseAuth.instance.currentUser;
+    final user = FirebaseAuth.instance.currentUser; //Obtém o usuário atual
     if (user != null) {
       setState(() {
-        usuarioUid = user.uid;
+        usuarioUid = user.uid; //Armazena o UID
       });
 
+      //Verifica o tipo de usuário no Firestore
       final snapshot = await FirebaseFirestore.instance
           .collection('Usuarios')
           .doc(user.uid)
@@ -37,12 +39,13 @@ class _PortfolioPageState extends State<PortfolioPage> {
 
       if (snapshot.exists && snapshot.data()?['tipoUsuario'] == 'professor') {
         setState(() {
-          isProfessor = true;
+          isProfessor = true; //Atualiza a variável se for professor
         });
       }
     }
   }
 
+  //Método para buscar os portfólios da disciplina
   Future<void> _fetchPortfolios() async {
     try {
       final snapshot = await FirebaseFirestore.instance
@@ -61,19 +64,22 @@ class _PortfolioPageState extends State<PortfolioPage> {
             'sugestoes': doc['sugestoes'] ?? [],
             'professorUid': doc['professorUid'],
           };
-        }).toList();
+        }).toList(); //Converte os documentos em uma lista de mapas
       });
     } catch (e) {
-      print('Erro ao buscar portfólios: $e');
+      print('Erro ao buscar portfólios: $e'); 
     }
   }
 
+  //Método para adicionar um novo portfólio
   void _adicionarPortfolio() {
+    //Controladores de texto para os campos do diálogo
     final TextEditingController tituloController = TextEditingController();
     final TextEditingController descricaoController = TextEditingController();
     final TextEditingController instrucoesController = TextEditingController();
     final TextEditingController sugestaoController = TextEditingController();
 
+    //Exibe um diálogo para adicionar um portfólio
     showDialog(
       context: context,
       builder: (context) {
@@ -107,12 +113,13 @@ class _PortfolioPageState extends State<PortfolioPage> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(); //Fecha o diálogo
               },
               child: const Text('Cancelar'),
             ),
             TextButton(
               onPressed: () async {
+                //Valida se todos os campos estão preenchidos
                 if (tituloController.text.isEmpty ||
                     descricaoController.text.isEmpty ||
                     instrucoesController.text.isEmpty ||
@@ -120,9 +127,10 @@ class _PortfolioPageState extends State<PortfolioPage> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Todos os campos são obrigatórios!')),
                   );
-                  return;
+                  return; //Retorna se algum campo estiver vazio
                 }
 
+                //Cria um novo portfólio no Firestore
                 final data = {
                   'titulo': tituloController.text,
                   'descricao': descricaoController.text,
@@ -137,8 +145,8 @@ class _PortfolioPageState extends State<PortfolioPage> {
                     .collection('Portfolios')
                     .add(data);
 
-                Navigator.of(context).pop();
-                _fetchPortfolios();
+                Navigator.of(context).pop(); //Fecha o diálogo
+                _fetchPortfolios(); //Atualiza a lista de portfólios
               },
               child: const Text('Adicionar'),
             ),
@@ -152,12 +160,12 @@ class _PortfolioPageState extends State<PortfolioPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Portfólios'),
+        title: const Text('Portfólios'), 
         centerTitle: true,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
-        children: portfolios.map((portfolio) {
+        children: portfolios.map((portfolio) { //Mapeia os portfólios para widgets
           return Card(
             elevation: 4,
             margin: const EdgeInsets.symmetric(vertical: 8.0),
@@ -186,7 +194,7 @@ class _PortfolioPageState extends State<PortfolioPage> {
                       ],
                     ),
                   ),
-                if (!isProfessor)
+                if (!isProfessor) //Condicional para exibir o botão se não for professor
                   TextButton.icon(
                     onPressed: () {
                     },
@@ -198,13 +206,13 @@ class _PortfolioPageState extends State<PortfolioPage> {
           );
         }).toList(),
       ),
-      floatingActionButton: isProfessor
+      floatingActionButton: isProfessor //Exibe o FAB se for professor
           ? FloatingActionButton(
-              onPressed: _adicionarPortfolio,
+              onPressed: _adicionarPortfolio, //Chama o método para adicionar portfólio
               tooltip: 'Adicionar Portfólio',
               child: const Icon(Icons.add),
             )
-          : null,
+          : null, //Não exibe o FAB se não for professor
     );
   }
 }

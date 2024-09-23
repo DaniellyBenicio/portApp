@@ -4,12 +4,13 @@ import 'seletor.dart';
 class SettingsPage extends StatelessWidget {
   final String userType;
 
-  const SettingsPage({super.key, required this.userType});
+  const SettingsPage({super.key, required this.userType}); //Armazena o tipo de usuário
 
+  //Método para exibir um diálogo de confirmação para logout
   Future<void> _showLogoutConfirmationDialog(BuildContext context) async {
     return showDialog<void>(
       context: context,
-      barrierDismissible: false, 
+      barrierDismissible: false, //Impede que o usuário feche o diálogo ao tocar fora
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Confirmar Saída'),
@@ -18,17 +19,17 @@ class SettingsPage extends StatelessWidget {
             TextButton(
               child: const Text('Cancelar'),
               onPressed: () {
-                Navigator.of(context).pop(); // Fecha o diálogo
+                Navigator.of(context).pop(); //Fecha o diálogo
               },
             ),
             TextButton(
               child: const Text('Sair'),
               onPressed: () {
-                Navigator.of(context).pop(); // Fecha o diálogo
+                Navigator.of(context).pop(); //Fecha o diálogo
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (context) => const Seletor()),
-                  (route) => false, 
+                  (route) => false, //Remove todas as rotas anteriores
                 );
               },
             ),
@@ -65,14 +66,14 @@ class SettingsPage extends StatelessWidget {
               leading: const Icon(Icons.edit),
               title: const Text('Editar Perfil'),
               onTap: () {
-                Navigator.pushNamed(context, '/editProfile');
+                Navigator.pushNamed(context, '/editProfile');//Navega para a tela de edição de perfil
               },
             ),
             ListTile(
               leading: const Icon(Icons.lock),
               title: const Text('Trocar Senha'),
               onTap: () {
-                Navigator.pushNamed(context, '/changePassword');
+                Navigator.pushNamed(context, '/changePassword');//Navega para a tela de mudar senha
               },
             ),
             ListTile(
@@ -82,7 +83,7 @@ class SettingsPage extends StatelessWidget {
                 style: TextStyle(color: Colors.red),
               ),
               onTap: () {
-                Navigator.pushNamed(context, '/deleteAccount');
+                Navigator.pushNamed(context, '/deleteAccount');//Navega para a tela de deletar conta
               },
             ),
             const Divider(),
@@ -90,7 +91,7 @@ class SettingsPage extends StatelessWidget {
               leading: const Icon(Icons.info), 
               title: const Text('Sobre Nós'),
               onTap: () {
-                Navigator.pushNamed(context, '/aboutUs');
+                Navigator.pushNamed(context, '/aboutUs');//Navega para a tela sobre nós
               },
             ),
             const Spacer(),
@@ -105,7 +106,7 @@ class SettingsPage extends StatelessWidget {
                   minimumSize: const Size(120, 40),
                 ),
                 onPressed: () {
-                  _showLogoutConfirmationDialog(context); 
+                  _showLogoutConfirmationDialog(context); //Mostra o diálogo de confirmação de logout
                 },
                 child: const Text('Sair'),
               ),

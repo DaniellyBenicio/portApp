@@ -7,19 +7,20 @@ class RecoverPassword extends StatefulWidget {
 }
 
 class _RecoverPasswordState extends State<RecoverPassword> {
-  final _emailController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  bool _loading = false;
+  final _emailController = TextEditingController(); //Controlador para o campo de e-mail
+  final _formKey = GlobalKey<FormState>(); //Chave para o formulário
+  bool _loading = false; //Indicador de carregamento
 
+  //Método para enviar o e-mail de recuperação de senha
   Future<void> _resetPassword() async {
-    if (_formKey.currentState!.validate()) {
+    if (_formKey.currentState!.validate()) {//Valida o formulário
       setState(() {
-        _loading = true;
+        _loading = true;//Ativa o indicador de carregamento
       });
 
       try {
         await FirebaseAuth.instance.sendPasswordResetEmail(
-          email: _emailController.text.trim(),
+          email: _emailController.text.trim(),//Envia o e-mail para recuperação
         );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -114,11 +115,11 @@ class _RecoverPasswordState extends State<RecoverPassword> {
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Por favor, insira o seu e-mail';
+                              return 'Por favor, insira o seu e-mail'; //Validação para campo vazio
                             } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                              return 'Por favor, insira um e-mail válido';
+                              return 'Por favor, insira um e-mail válido'; //Validação de formato
                             }
-                            return null;
+                            return null; //Se válido
                           },
                         ),
                       ),
@@ -126,7 +127,7 @@ class _RecoverPasswordState extends State<RecoverPassword> {
                       _loading
                           ? const Center(child: CircularProgressIndicator())
                           : ElevatedButton(
-                              onPressed: _resetPassword,
+                              onPressed: _resetPassword, //Chama o método de reset
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color.fromRGBO(18, 86, 143, 1),
                                 padding: const EdgeInsets.symmetric(vertical: 16),

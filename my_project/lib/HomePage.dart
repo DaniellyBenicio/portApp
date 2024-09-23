@@ -8,8 +8,9 @@ import 'disciplinesPage.dart';
 import 'AlunoDisciplinesPage.dart';
 
 
+//Página principal do aplicativo
 class HomePage extends StatefulWidget {
-  final String userType; // aluno ou professor
+  final String userType; //Tipo de usuário
 
   const HomePage({super.key, required this.userType});
 
@@ -20,10 +21,11 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
 
+  //Método que retorna as páginas com base no tipo de usuário
   List<Widget> _getPages() {
     if (widget.userType == 'Aluno') {
       return [
-        StudentPortfolioPage(),
+        const StudentPortfolioPage(),
         AlunoDisciplinesPage(),
         SettingsPage(userType: widget.userType),
       ];
@@ -40,11 +42,13 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+//Método que atualiza o índice da página atual e navega para a nova página
   void _onItemTapped(int index) {
     setState(() {
       _currentIndex = index;
     });
 
+    //Navegação para páginas específicas com base no índice
     switch (index) {
       case 0:
         Navigator.pushNamed(context, '/HomePage');
@@ -75,10 +79,10 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       bottomNavigationBar: Menu(
-        currentIndex: _currentIndex,
-        onItemTapped: _onItemTapped,
+        currentIndex: _currentIndex, //Passa o índice atual para o Menu
+        onItemTapped: _onItemTapped, //Callback para item selecionado
       ),
-      body: _getPages()[_currentIndex],
+      body: _getPages()[_currentIndex], //Exibe a página atual com base no índice
     );
   }
 }
