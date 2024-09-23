@@ -44,7 +44,7 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
             ...doc.data() as Map<String, dynamic>,
           };
         }).toList();
-        nomeController.clear(); // Limpar campo após a busca
+        nomeController.clear(); 
       } else {
         _showSnackBar('Disciplina não encontrada');
       }
@@ -116,7 +116,6 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
         padding: const EdgeInsets.all(16.0),
         child: Row(
           children: [
-            // Parte de busca por nome
             Expanded(
               flex: 2,
               child: Column(
@@ -162,7 +161,7 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
               ),
             ),
             const SizedBox(width: 16),
-            // Parte de busca por código de acesso
+
             Expanded(
               flex: 1,
               child: Column(
@@ -229,7 +228,7 @@ class DisciplinaDetalhesPage extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                // Adicione uma ação para um botão, se necessário
+
               },
               child: const Text('Ação Adicional'),
             ),
