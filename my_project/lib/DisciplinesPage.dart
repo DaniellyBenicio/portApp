@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:my_project/services/firestore_service.dart';
 import 'package:flutter/services.dart';
-import 'ActivitiesPage.dart';
+import 'PortfolioPage.dart';
 
 class DisciplinesPage extends StatefulWidget {
   @override
@@ -69,11 +69,11 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
             children: [
               TextField(
                 controller: nomeController,
-                decoration: InputDecoration(labelText: 'Nome'),
+                decoration: const InputDecoration(labelText: 'Nome'),
               ),
               TextField(
                 controller: descricaoController,
-                decoration: InputDecoration(labelText: 'Descrição'),
+                decoration: const InputDecoration(labelText: 'Descrição'),
               ),
             ],
           ),
@@ -82,14 +82,14 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancelar'),
+              child: const Text('Cancelar'),
             ),
             TextButton(
               onPressed: () async {
                 if (nomeController.text.isEmpty || descricaoController.text.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Nome e descrição são obrigatórios!'),
+                    const SnackBar(
+                      content: const Text('Nome e descrição são obrigatórios!'),
                       duration: Duration(seconds: 2),
                     ),
                   );
@@ -98,7 +98,7 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
 
                 if (professorUid == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Usuário não autenticado!'),
                       duration: Duration(seconds: 2),
                     ),
@@ -127,7 +127,7 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
                     context: context,
                     builder: (context) {
                       return AlertDialog(
-                        title: Text('Disciplina Criada'),
+                        title: const Text('Disciplina Criada'),
                         content: Container(
                           width: 200,
                           height: 100,
@@ -136,16 +136,16 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
                             children: [
                               SelectableText(
                                 'Código de Acesso: $codigoAcesso',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                                style: const TextStyle(fontWeight: FontWeight.bold),
                                 textAlign: TextAlign.center,
                               ),
-                              SizedBox(height: 8),
+                              const SizedBox(height: 8),
                               IconButton(
-                                icon: Icon(Icons.copy),
+                                icon: const Icon(Icons.copy),
                                 onPressed: () {
                                   Clipboard.setData(ClipboardData(text: codigoAcesso));
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
+                                    const SnackBar(
                                       content: Text('Código copiado para a área de transferência!'),
                                       duration: Duration(seconds: 2),
                                     ),
@@ -161,7 +161,7 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
                             onPressed: () {
                               Navigator.of(context).pop();
                             },
-                            child: Text('OK'),
+                            child: const Text('OK'),
                           ),
                         ],
                       );
@@ -169,14 +169,14 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
                   );
 
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Disciplina criada com sucesso!'),
                       duration: Duration(seconds: 5),
                     ),
                   );
                 }
               },
-              child: Text('Criar'),
+              child: const Text('Criar'),
             ),
           ],
         );
@@ -192,17 +192,17 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Editar Disciplina'),
+          title: const Text('Editar Disciplina'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: nomeController,
-                decoration: InputDecoration(labelText: 'Nome'),
+                decoration: const InputDecoration(labelText: 'Nome'),
               ),
               TextField(
                 controller: descricaoController,
-                decoration: InputDecoration(labelText: 'Descrição'),
+                decoration: const InputDecoration(labelText: 'Descrição'),
               ),
             ],
           ),
@@ -216,13 +216,13 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
                 Navigator.of(context).pop();
                 _fetchDisciplinas();
               },
-              child: Text('Salvar'),
+              child: const Text('Salvar'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancelar'),
+              child: const Text('Cancelar'),
             ),
           ],
         );
@@ -235,21 +235,21 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Confirmar Exclusão'),
-          content: Text('Você realmente deseja deletar esta disciplina?'),
+          title: const Text('Confirmar Exclusão'),
+          content: const Text('Você realmente deseja deletar esta disciplina?'),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Cancelar'),
+              child: const Text('Cancelar'),
             ),
             TextButton(
               onPressed: () async {
                 try {
                   await FirebaseFirestore.instance.collection('Disciplinas').doc(disciplinaId).delete();
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
+                    const SnackBar(
                       content: Text('Disciplina excluída com sucesso!'),
                       duration: Duration(seconds: 2),
                     ),
@@ -260,7 +260,7 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
                 }
                 Navigator.of(context).pop();
               },
-              child: Text('Sim'),
+              child: const Text('Sim'),
             ),
           ],
         );
@@ -272,7 +272,7 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(child: Text('Disciplinas')),
+        title: const Center(child: Text('Disciplinas')),
         backgroundColor: Colors.blue,
       ),
       body: Padding(
@@ -287,7 +287,7 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ActivitiesPage(disciplinaId: disciplina['id']),
+                    builder: (context) => PortfolioPage(disciplinaId: disciplina['id']),
                   ),
                 );
               },
@@ -301,30 +301,30 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
                     children: [
                       Text(
                         disciplina['nome'],
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
                         disciplina['descricao'],
                         textAlign: TextAlign.justify,
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       if (disciplina['codigoAcesso'] != null && disciplina['codigoAcesso'].isNotEmpty) 
                         Text(
                           'Código de Acesso: ${disciplina['codigoAcesso']}',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           IconButton(
-                            icon: Icon(Icons.edit),
+                            icon: const Icon(Icons.edit),
                             onPressed: () => _editarDisciplina(disciplina),
                             tooltip: 'Editar',
                           ),
                           IconButton(
-                            icon: Icon(Icons.delete, color: Colors.red),
+                            icon: const Icon(Icons.delete, color: Colors.red),
                             onPressed: () => _deletarDisciplina(disciplina['id']),
                             tooltip: 'Deletar',
                           ),
@@ -341,7 +341,7 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
       floatingActionButton: FloatingActionButton(
         onPressed: _criarDisciplina,
         tooltip: 'Criar Disciplina',
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }
