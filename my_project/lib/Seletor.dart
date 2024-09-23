@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'Login.dart';
 
 class Seletor extends StatelessWidget {
-  const Seletor({super.key});
+  const Seletor({super.key});//Construtor da classe 
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +54,7 @@ class UserSelectionBody extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const Login(userType: 'Aluno'),
+                          builder: (context) => const Login(userType: 'Aluno'),//Cria uma nova rota para a página de login com o tipo aluno
                         ),
                       );
                     },
@@ -67,7 +67,7 @@ class UserSelectionBody extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const Login(userType: 'Professor'),
+                          builder: (context) => const Login(userType: 'Professor'),//Cria uma nova rota para a página de login com o tipo professor
                         ),
                       );
                     },

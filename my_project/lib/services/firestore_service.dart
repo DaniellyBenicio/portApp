@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:math';
 
 
-class FirestoreService {
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+class FirestoreService {//interação com o Firestore para gerenciamento de coleções 
+  final FirebaseFirestore _db = FirebaseFirestore.instance;//Cria uma instancia para interagir com o BD
 
   // Adiciona um novo usuário diretamente na coleção 'Usuarios'
   Future<void> addUser({
@@ -18,6 +18,7 @@ class FirestoreService {
         throw ArgumentError('Tipo de usuário inválido. Use "Aluno" ou "Professor".');
       }
 
+       //Adiciona o usuário à coleção 'Usuarios' com os campos especificados
       await _db.collection('Usuarios').add({
         'email': email,
         'nome': nome,
@@ -30,12 +31,13 @@ class FirestoreService {
     }
   }
 
-  // Obtém todos os usuários de um tipo específico
+  //Obtém todos os usuários de um tipo específico
   Stream<List<Map<String, dynamic>>> getUsers(String tipo) {
     if (tipo != 'Aluno' && tipo != 'Professor') {
       throw ArgumentError('Tipo de usuário inválido. Use "Aluno" ou "Professor".');
     }
 
+    //Retorna um stream de usuários filtrados pelo tipo
     return _db
         .collection('Usuarios')
         .where('tipo', isEqualTo: tipo)
@@ -45,7 +47,7 @@ class FirestoreService {
             .toList());
   }
 
-  // Adiciona ou atualiza um usuário com um ID específico (por exemplo, UID)
+  //Adiciona ou atualiza um usuário com um ID específico (por exemplo, UID)
   Future<void> upsertUser({
     required String uid, // UID do usuário
     required String email,
@@ -58,18 +60,20 @@ class FirestoreService {
         throw ArgumentError('Tipo de usuário inválido. Use "Aluno" ou "Professor".');
       }
 
+      //Adiciona ou atualiza o usuário com o UID fornecido
       await _db.collection('Usuarios').doc(uid).set({
         'email': email,
         'nome': nome,
         'tipo': tipo,
         'infoAdicional': infoAdicional ?? '',
-      }, SetOptions(merge: true)); // Use merge para atualizar campos existentes
+      }, SetOptions(merge: true)); //Usa merge para atualizar campos existentes
       print('Usuário atualizado com sucesso.');
     } catch (e) {
       print('Erro ao atualizar usuário: $e');
     }
   }
 
+  //Método para obter o ID do documento de um usuário com base no e-mail
   Future<String?> getDocumentIdByEmail(String email) async {
     try {
       final querySnapshot = await _db
@@ -90,7 +94,7 @@ class FirestoreService {
     }
   }
 
-  // Adiciona uma nova disciplina com uma chave de acesso
+  //Adiciona uma nova disciplina com uma chave de acesso
   Future<String?> addDisciplina({
   required String nome,
   required String descricao,
@@ -98,7 +102,7 @@ class FirestoreService {
 
   }) async {
     try {
-      String codigoAcesso = _gerarCodigoAcesso();
+      String codigoAcesso = _gerarCodigoAcesso();//Gera codigo de acesso
       await _db.collection('Disciplinas').add({
         'nome': nome,
         'descricao': descricao,
@@ -112,13 +116,15 @@ class FirestoreService {
       return null;
     }
   }
-  // Gera uma chave de acesso aleatória
+  //Gera uma chave de acesso aleatória
   String _gerarCodigoAcesso() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#@_';
     final Random rand = Random();
     return List.generate(8, (index) => chars[rand.nextInt(chars.length)]).join();
   }
 
+  
+  //Método para inscrever um aluno em uma disciplina
   Future<void> inscreverAluno(String disciplinaId, String alunoUid, String codigoAcesso) async {
   try {
     DocumentSnapshot disciplinaSnapshot = await _db.collection('Disciplinas').doc(disciplinaId).get();
@@ -148,6 +154,7 @@ class FirestoreService {
   }
 }
 
+//Método para obter as disciplinas em que o aluno está matriculado
 Future<List<Map<String, dynamic>>> getDisciplinasMatriculadas(String alunoUid) async {
   try {
     final snapshot = await _db.collection('Disciplinas').where('alunos.$alunoUid', isEqualTo: true).get();
@@ -164,6 +171,7 @@ Future<List<Map<String, dynamic>>> getDisciplinasMatriculadas(String alunoUid) a
   }
 }
 
+//Método para adicionar uma atividade ou portfólio em uma disciplina - precisa mudar
 Future<void> adicionarAtividadeOuPortfolio({
   required String disciplinaId,
   required String titulo,

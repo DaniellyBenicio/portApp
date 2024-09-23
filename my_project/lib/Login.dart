@@ -5,26 +5,30 @@ import 'RecoverPassword.dart';
 import 'Register.dart';
 import 'package:flutter/gestures.dart';
 
+//Define a classe Login que é um StatefulWidget para permitir gerenciamento de estado
+
 class Login extends StatefulWidget {
-  final String userType;
+  final String userType; //Tipo de usuário passado como parâmetro 
 
   const Login({super.key, required this.userType});
 
   @override
   // ignore: library_private_types_in_public_api
-  _LoginState createState() => _LoginState();
+  _LoginState createState() => _LoginState(); //Cria o estado do Login
 }
 
 class _LoginState extends State<Login> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  bool _isLoading = false; // Gerenciar o estado de carregamento
-  bool _obscurePassword = true; // Gerenciar a visibilidade da senha
+  final TextEditingController _emailController = TextEditingController(); //Controla o campo de email
+  final TextEditingController _passwordController = TextEditingController(); //Controla o campo de senha
+  bool _isLoading = false; //Gerencia o estado de carregamento
+  bool _obscurePassword = true; //Gerencia a visibilidade da senha
 
+  //Função assíncrona para fazer login
   Future<void> _login() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
+    //Verifica preenchimento dos campos
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor, preencha todos os campos.')),
@@ -33,11 +37,12 @@ class _LoginState extends State<Login> {
     }
 
     setState(() {
-      _isLoading = true; // Ativa o indicador de carregamento
+      _isLoading = true; //Ativa o indicador de carregamento
     });
 
     try {
-      // ignore: unused_local_variable
+      //ignore: unused_local_variable
+      //Tenta fazer o login com o Firebase Authentication
       UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
@@ -47,19 +52,19 @@ class _LoginState extends State<Login> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('user_type', widget.userType);
 
-      // Navega para a tela inicial após o login bem-sucedido
+      //Navega para a tela inicial após o login bem-sucedido
       if (widget.userType == 'Professor') {
         // ignore: use_build_context_synchronously
         Navigator.pushReplacementNamed(context, '/homeProfessor');
       } else if (widget.userType == 'Aluno') {
-        // ignore: use_build_context_synchronously
+        //ignore: use_build_context_synchronously
         Navigator.pushReplacementNamed(context, '/homeAluno');
       } else {
-        // ignore: avoid_print
+        //ignore: avoid_print
         print('Tipo de usuário inválido: ${widget.userType}');
       }
     } on FirebaseAuthException catch (e) {
-      // Mensagens específicas para diferentes erros
+      //Mensagens específicas para diferentes erros
       String message;
       if (e.code == 'user-not-found') {
         message = 'Nenhum usuário encontrado com esse e-mail.';
@@ -75,14 +80,14 @@ class _LoginState extends State<Login> {
         SnackBar(content: Text(message)),
       );
     } catch (e) {
-      // Mensagem genérica para outros erros
+      //Mensagem genérica para outros erros
       // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao fazer login: ${e.toString()}')),
       );
     } finally {
       setState(() {
-        _isLoading = false; // Desativa o indicador de carregamento
+        _isLoading = false; //Desativa o indicador de carregamento
       });
     }
   }
@@ -94,7 +99,7 @@ Widget build(BuildContext context) {
       leading: IconButton(
         icon: const Icon(Icons.arrow_back),
         onPressed: () {
-          Navigator.pop(context); // Ação do botão de voltar
+          Navigator.pop(context);
         },
       ),
       backgroundColor: const Color.fromRGBO(18, 86, 143, 1), 
@@ -156,7 +161,7 @@ Widget build(BuildContext context) {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => RecoverPassword()),
+                  MaterialPageRoute(builder: (context) => RecoverPassword()),//Navega para a tela de recuperação de senha
                 );
               },
               child: const Text(
@@ -212,13 +217,13 @@ Widget build(BuildContext context) {
   );
 }
 
-Widget _buildTextField({
+Widget _buildTextField({//Função para criar os campos de texto (e-mail e senha)
   required TextEditingController controller,
   required String label,
   required bool isPassword,
   bool obscureText = false,
   ValueChanged<bool>? onVisibilityChanged,
-  ValueChanged<String>? onSubmitted, // Adicionando o parâmetro onSubmitted
+  ValueChanged<String>? onSubmitted, //Parâmetro para acionar o login ao pressionar Enter
 }) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,

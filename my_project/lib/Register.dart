@@ -3,12 +3,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:my_project/services/firestore_service.dart';
 
 class Register extends StatefulWidget {
-  final String userType;
+  final String userType;//Armazena o tipo de usuário
 
-  const Register({Key? key, required this.userType}) : super(key: key);
+  const Register({Key? key, required this.userType}) : super(key: key);//Construtor que aceita o tipo de usuário.
 
   @override
-  _RegisterState createState() => _RegisterState();
+  _RegisterState createState() => _RegisterState();//Cria o estado da tela de registro
 }
 
 class _RegisterState extends State<Register> {
@@ -18,25 +18,27 @@ class _RegisterState extends State<Register> {
   final _confirmPasswordController = TextEditingController();
   final _additionalInfoController = TextEditingController();
 
-  bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true;
-  bool _isLoading = false;
+  bool _obscurePassword = true; //Controla a visibilidade da senha
+  bool _obscureConfirmPassword = true; //Controla a visibilidade da confirmação da senha
+  bool _isLoading = false; //Indica se o processo de registro está em andamento
 
   Future<void> _register() async {
     if (_passwordController.text == _confirmPasswordController.text) {
       setState(() {
-        _isLoading = true;
+        _isLoading = true;//Inicia o carregamento
       });
 
       try {
+        //Cria um novo usuário com email e senha no Firebase
         UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: _emailController.text,
           password: _passwordController.text,
         );
 
-        final uid = userCredential.user?.uid;
+        final uid = userCredential.user?.uid;//Obtém o UID do usuário
 
         if (uid != null) {
+          //Se o UID não for nulo, registra o usuário no Firestore
           await FirestoreService().addUser(
             email: _emailController.text,
             nome: _nameController.text,
@@ -48,7 +50,7 @@ class _RegisterState extends State<Register> {
             const SnackBar(content: Text('Cadastro realizado com sucesso!')),
           );
 
-          Navigator.pop(context);
+          Navigator.pop(context);//Retorna para a tela anterior
         }
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -138,26 +140,26 @@ class _RegisterState extends State<Register> {
                     });
                   },
                   onSubmitted: (value) {
-                    _register();
+                    _register();//Chama o método de registro ao submeter
                   },
                 ),
-                if (widget.userType == 'Professor') ...[
-                  const SizedBox(height: 8), // Menos espaço
+                if (widget.userType == 'Professor') ...[//Se o usuário for professor, exibe o campo adicional
+                  const SizedBox(height: 8), 
                   _buildTextField(
                     controller: _additionalInfoController,
                     label: 'Formação',
                     isPassword: false,
                     onSubmitted: (value) {
-                      _register();
+                      _register();//Chama o método de registro ao submeter
                     },
                   ),
                 ],
-                const SizedBox(height: 12), // Menos espaço
+                const SizedBox(height: 12), 
                 ElevatedButton(
                   onPressed: _isLoading ? null : _register,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color.fromRGBO(18, 86, 143, 1),
-                    padding: const EdgeInsets.symmetric(vertical: 16), // Diminui o padding vertical
+                    padding: const EdgeInsets.symmetric(vertical: 16), 
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),

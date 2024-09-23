@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_core/firebase_core.dart'; //integra firebase
 import 'firebase_options.dart';
 import 'Seletor.dart'; 
 import 'HomePage.dart';
@@ -12,13 +12,15 @@ import 'Login.dart';
 import 'Register.dart';
 
 void main() async {
+  // Garante a inicialização dos widgets do Flutter antes que qualquer ação seja realizada
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Inicializando Firebase
+  //Inicializa o Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  //inicia o app
   runApp(const MyApp());
 }
 
@@ -26,11 +28,12 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) {//Método build para construção da interface do aplicativo
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const Seletor(), // Home permanece como Seletor
+      home: const Seletor(), //Define que o início será a page seletor
       routes: {
+        //Define as rotas que podem ser navegadas no aplicativo
         '/homeAluno': (context) => const HomePage(userType: 'Aluno'),
         '/homeProfessor': (context) => const HomePage(userType: 'Professor'),
         '/settingsAluno': (context) => const SettingsPage(userType: 'Aluno'), 
