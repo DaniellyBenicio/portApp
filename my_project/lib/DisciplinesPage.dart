@@ -11,34 +11,34 @@ class DisciplinesPage extends StatefulWidget {
 }
 
 class _DisciplinesPageState extends State<DisciplinesPage> {
-  final FirestoreService _firestoreService = FirestoreService();
-  List<Map<String, dynamic>> disciplinas = [];
-  String? professorUid;
+  final FirestoreService _firestoreService = FirestoreService(); //Instância do serviço Firestore.
+  List<Map<String, dynamic>> disciplinas = []; //Lista para armazenar as disciplinas.
+  String? professorUid; //UID do professor autenticado.
 
   @override
   void initState() {
     super.initState();
-    _getCurrentUserUid(); // Busca o UID do professor ao iniciar
-    _fetchDisciplinas();
+    _getCurrentUserUid(); //Busca o UID do professor ao iniciar.
+    _fetchDisciplinas(); //Carrega as disciplinas do professor.
   }
 
   void _getCurrentUserUid() {
-    User? user = FirebaseAuth.instance.currentUser;
+    User? user = FirebaseAuth.instance.currentUser;//Obtém o usuário autenticado
     if (user != null) {
-      professorUid = user.uid; // Armazena o UID do professor autenticado
+      professorUid = user.uid; //Armazena o UID do professor autenticado
       print(professorUid);
     } else {
       print('Nenhum usuário autenticado');
     }
   }
 
-  Future<void> _fetchDisciplinas() async {
+  Future<void> _fetchDisciplinas() async {//Retorna se o UID não estiver disponível
     if (professorUid == null) return;
 
     try {
       final snapshot = await FirebaseFirestore.instance
           .collection('Disciplinas')
-          .where('professorUid', isEqualTo: professorUid) // Filtra pelas disciplinas do professor
+          .where('professorUid', isEqualTo: professorUid) //Filtra pelas disciplinas do professor
           .get();
 
       setState(() {
@@ -46,7 +46,7 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
           return {
             'id': doc.id,
             'codigoAcesso': doc.data()['codigoAcesso'] ?? '',
-            ...doc.data() as Map<String, dynamic>,
+            ...doc.data() as Map<String, dynamic>,//Extrai dados do documento
           };
         }).toList();
       });
@@ -117,12 +117,13 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
                 if (codigoAcesso != null) {
                   setState(() {
                     disciplinas.add({
-                      'id': 'novo_id',
+                      'id': 'novo_id', //Adiciona nova disciplina à lista
                       'nome': nomeController.text,
                       'descricao': descricaoController.text,
                       'codigoAcesso': codigoAcesso,
                     });
                   });
+                  //Exibe um diálogo com o código de acesso da nova disciplina
                   showDialog(
                     context: context,
                     builder: (context) {
