@@ -2,17 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+//Página principal para exibir as disciplinas do aluno
 class AlunoDisciplinesPage extends StatefulWidget {
   @override
   _AlunoDisciplinesPageState createState() => _AlunoDisciplinesPageState();
 }
 
 class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
+  //Controladores para os campos de texto
   final TextEditingController codigoController = TextEditingController();
   final TextEditingController nomeController = TextEditingController();
+  
+  //Lista para armazenar as disciplinas buscadas
   List<Map<String, dynamic>> disciplinas = [];
-  bool loading = false;
+  bool loading = false; //Indica se está carregando os dados
 
+  //Busca disciplinas pelo nome
   Future<void> _buscarDisciplinasPorNome() async {
     final nomeDisciplina = nomeController.text.trim();
     if (nomeDisciplina.isEmpty) {
@@ -21,16 +26,17 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
     }
 
     setState(() {
-      loading = true;
+      loading = true; //Inicia o carregamento
     });
 
     try {
-      final user = FirebaseAuth.instance.currentUser;
+      final user = FirebaseAuth.instance.currentUser; //Obtém o usuário autenticado
       if (user == null) {
         _showSnackBar('Usuário não autenticado');
         return;
       }
 
+      //Busca disciplinas no Firestore com base no nome e no ID do professor
       final snapshot = await FirebaseFirestore.instance
           .collection('Disciplinas')
           .where('nome', isEqualTo: nomeDisciplina)
@@ -40,11 +46,11 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
       if (snapshot.docs.isNotEmpty) {
         disciplinas = snapshot.docs.map((doc) {
           return {
-            'id': doc.id,
-            ...doc.data() as Map<String, dynamic>,
+            'id': doc.id, //Adiciona o ID do documento
+            ...doc.data() as Map<String, dynamic>, //Adiciona os dados da disciplina
           };
         }).toList();
-        nomeController.clear(); 
+        nomeController.clear(); //Limpa o campo após a busca
       } else {
         _showSnackBar('Disciplina não encontrada');
       }
@@ -53,11 +59,12 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
       _showSnackBar('Erro ao buscar disciplinas');
     } finally {
       setState(() {
-        loading = false;
+        loading = false; //Finaliza o carregamento
       });
     }
   }
 
+  //Função para buscar disciplina pelo código de acesso
   Future<void> _buscarDisciplinaPorCodigo() async {
     final codigoAcesso = codigoController.text.trim();
     if (codigoAcesso.isEmpty) {
@@ -72,6 +79,7 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
         return;
       }
 
+      //Busca disciplina no Firestore pelo código de acesso
       final snapshot = await FirebaseFirestore.instance
           .collection('Disciplinas')
           .where('codigoAcesso', isEqualTo: codigoAcesso)
@@ -83,13 +91,14 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
           ...snapshot.docs.first.data() as Map<String, dynamic>,
         };
 
+        //Navega para a página de detalhes da disciplina
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => DisciplinaDetalhesPage(disciplina: disciplina),
           ),
         );
-        codigoController.clear(); // Limpar campo após a busca
+        codigoController.clear(); 
       } else {
         _showSnackBar('Código de acesso inválido ou disciplina não encontrada');
       }
@@ -99,6 +108,7 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
     }
   }
 
+  //Função para exibir mensagens de erro
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
@@ -161,7 +171,7 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
               ),
             ),
             const SizedBox(width: 16),
-
+            // Entrar em uma disciplina pelo código
             Expanded(
               flex: 1,
               child: Column(
@@ -169,6 +179,7 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
                 children: [
                   const Text('Entrar em uma Disciplina pelo Código', style: TextStyle(fontSize: 18)),
                   const SizedBox(height: 8),
+                  //Campo para nserir o código de acesso
                   TextField(
                     controller: codigoController,
                     decoration: const InputDecoration(
@@ -199,6 +210,7 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
   }
 }
 
+//Página para exibir detalhes da disciplina
 class DisciplinaDetalhesPage extends StatelessWidget {
   final Map<String, dynamic> disciplina;
 
@@ -228,7 +240,6 @@ class DisciplinaDetalhesPage extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-
               },
               child: const Text('Ação Adicional'),
             ),

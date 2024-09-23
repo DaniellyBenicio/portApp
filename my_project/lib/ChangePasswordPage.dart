@@ -15,16 +15,17 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   final _auth = FirebaseAuth.instance;
 
   String _errorMessage = '';
-  bool _obscureCurrentPassword = true;
-  bool _obscureNewPassword = true;
-  bool _obscureConfirmPassword = true;
+  bool _obscureCurrentPassword = true; //Controle de visibilidade da senha atual
+  bool _obscureNewPassword = true; //Controle de visibilidade da nova senha
+  bool _obscureConfirmPassword = true; //Controle de visibilidade da confirmação da nova senha
 
+  //Função para alterar a senha
   Future<void> _changePassword() async {
     final currentPassword = _currentPasswordController.text.trim();
     final newPassword = _newPasswordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
 
-    // Verifica se as senhas novas são iguais
+    //Verifica se as senhas novas são iguais
     if (newPassword != confirmPassword) {
       setState(() {
         _errorMessage = 'A nova senha e a confirmação não coincidem.';
@@ -42,19 +43,19 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
         return;
       }
 
-      // Cria credenciais de reautenticação
+      //Cria credenciais de reautenticação
       final credential = EmailAuthProvider.credential(
         email: user.email!,
         password: currentPassword,
       );
 
-      // Reautentica o usuário
+      //Reautentica o usuário
       await user.reauthenticateWithCredential(credential);
 
-      // Atualiza a senha no Firebase Auth
+      //Atualiza a senha no Firebase Auth
       await user.updatePassword(newPassword);
 
-      // Após atualizar a senha, navegue para a página de login
+      //Após atualizar a senha, navega para a página de login
       await _navigateToLogin();
     } catch (e) {
       setState(() {
@@ -83,12 +84,12 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   final prefs = await SharedPreferences.getInstance();
   final userType = prefs.getString('user_type') ?? 'Aluno';
 
-  print('Tipo de usuário armazenado: $userType'); // Adicione um print para depuração
+  print('Tipo de usuário armazenado: $userType'); //Testando se deu certo
 
   if (userType == 'Professor') {
-    Navigator.pushReplacementNamed(context, '/homeProfessor'); // Ajuste para a rota correta
+    Navigator.pushReplacementNamed(context, '/homeProfessor'); //Rota se professor
   } else if (userType == 'Aluno') {
-    Navigator.pushReplacementNamed(context, '/homeAluno'); // Ajuste para a rota correta
+    Navigator.pushReplacementNamed(context, '/homeAluno'); //Rota se aluno
   } else {
     print('Tipo de usuário inválido: $userType');
     // Opcional: Navegue para uma página de erro ou mostre um alerta
