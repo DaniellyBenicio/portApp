@@ -94,6 +94,33 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
     }
   }
 
+  // Método para obter o nome e a imagem de perfil do usuário com base no e-mail
+  Future<Map<String, String>?> getNomeAndImageByEmail(String email) async {
+    try {
+      final querySnapshot = await _db
+          .collection('Usuarios')
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final data = querySnapshot.docs.first.data();
+        return {
+          'nome': data['nome'] ?? '',
+          'profileImageUrl': data['profileImageUrl'] ?? 'https://example.com/default-profile.png',
+        };
+      } else {
+        print('Usuário não encontrado para o email fornecido.');
+        return null;
+      }
+    } catch (e) {
+      print('Erro ao obter dados do usuário pelo email: $e');
+      return null;
+    }
+  }
+
+
+
   //Adiciona uma nova disciplina com uma chave de acesso
   Future<String?> addDisciplina({
   required String nome,
