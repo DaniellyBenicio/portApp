@@ -168,78 +168,73 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
   }
 
   
-  //Método para inscrever um aluno em uma disciplina
+// Método para inscrever um aluno em uma disciplina
   Future<void> inscreverAluno(String disciplinaId, String alunoUid, String codigoAcesso) async {
-  try {
-    DocumentSnapshot disciplinaSnapshot = await _db.collection('Disciplinas').doc(disciplinaId).get();
+    try {
+      DocumentSnapshot disciplinaSnapshot = await _db.collection('Disciplinas').doc(disciplinaId).get();
 
-    if (disciplinaSnapshot.exists) {
-      String? codigoValido = disciplinaSnapshot['codigoAcesso'];
-      if (codigoAcesso == codigoValido) {
-        DocumentSnapshot alunoSnapshot = await _db.collection('Disciplinas').doc(disciplinaId).collection('alunos').doc(alunoUid).get();
-
-        if (!alunoSnapshot.exists) {
-          await _db.collection('Disciplinas').doc(disciplinaId).collection('alunos').doc(alunoUid).set({
-            'status': 'inscrito',
-            'dataInscricao': FieldValue.serverTimestamp(), // Armazena a data da inscrição
+      if (disciplinaSnapshot.exists) {
+        String? codigoValido = disciplinaSnapshot['codigoAcesso'];
+        if (codigoAcesso == codigoValido) {
+          // Cria a coleção "Matriculas" para registrar a matrícula do aluno
+          await _db.collection('Matriculas').add({
+            'alunoUid': alunoUid,
+            'disciplinaId': disciplinaId,
+            'professorUid': disciplinaSnapshot['professorUid'], // Armazena o ID do professor
+            'dataMatricula': FieldValue.serverTimestamp(),
           });
           print('Aluno inscrito na disciplina com sucesso.');
         } else {
-          print('Aluno já está inscrito nesta disciplina.');
+          print('Chave de acesso inválida.');
         }
       } else {
-        print('Chave de acesso inválida.');
+        print('Disciplina não encontrada. ID: $disciplinaId');
       }
-    } else {
-      print('Disciplina não encontrada. ID: $disciplinaId'); 
+    } catch (e) {
+      print('Erro ao inscrever aluno: $e');
     }
-  } catch (e) {
-    print('Erro ao inscrever aluno: $e');
   }
-}
 
-//Método para obter as disciplinas em que o aluno está matriculado
-Future<List<Map<String, dynamic>>> getDisciplinasMatriculadas(String alunoUid) async {
-  try {
-    final snapshot = await _db.collection('Disciplinas').where('alunos.$alunoUid', isEqualTo: true).get();
+  // Método para obter as disciplinas em que o aluno está matriculado
+  Future<List<Map<String, dynamic>>> getDisciplinasMatriculadas(String alunoUid) async {
+    try {
+      final snapshot = await _db.collection('Matriculas').where('alunoUid', isEqualTo: alunoUid).get();
 
-    return snapshot.docs.map((doc) {
-      return {
-        'id': doc.id,
-        ...doc.data() as Map<String, dynamic>,
-      };
-    }).toList();
-  } catch (e) {
-    print('Erro ao buscar disciplinas matriculadas: $e');
-    return [];
+      return snapshot.docs.map((doc) {
+        return {
+          'id': doc.id,
+          ...doc.data() as Map<String, dynamic>,
+        };
+      }).toList();
+    } catch (e) {
+      print('Erro ao buscar disciplinas matriculadas: $e');
+      return [];
+    }
   }
-}
 
-//Método para adicionar uma atividade ou portfólio em uma disciplina - precisa mudar
-Future<void> adicionarAtividadeOuPortfolio({
-  required String disciplinaId,
-  required String titulo,
-  required String descricao,
-  required String professorUid,
-  required String tipoArquivo, 
-  required bool isPortfolio, 
-}) async {
-  try {
-    final collectionName = isPortfolio ? 'Portfolios' : 'Atividades';
-    await _db.collection('Disciplinas')
-      .doc(disciplinaId)
-      .collection(collectionName)
-      .add({
+  // Método para adicionar uma atividade ou portfólio em uma disciplina
+  Future<void> adicionarAtividadeOuPortfolio({
+    required String disciplinaId,
+    required String titulo,
+    required String descricao,
+    required String professorUid,
+    required String tipoArquivo,
+    required bool isPortfolio,
+  }) async {
+    try {
+      final collectionName = isPortfolio ? 'Portfolios' : 'Atividades';
+      await _db.collection('Disciplinas')
+          .doc(disciplinaId)
+          .collection(collectionName)
+          .add({
         'titulo': titulo,
         'descricao': descricao,
         'professorUid': professorUid,
-        'tipoArquivo': tipoArquivo, // Adiciona o tipo de arquivo
+        'tipoArquivo': tipoArquivo,
       });
-    print('Atividade/Portfólio adicionado com sucesso.');
-  } catch (e) {
-    print('Erro ao adicionar atividade/portfólio: $e');
+      print('Atividade/Portfólio adicionado com sucesso.');
+    } catch (e) {
+      print('Erro ao adicionar atividade/portfólio: $e');
+    }
   }
-}
-
-
 }
