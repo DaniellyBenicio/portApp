@@ -107,7 +107,7 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
         final data = querySnapshot.docs.first.data();
         return {
           'nome': data['nome'] ?? '',
-          'profileImageUrl': data['profileImageUrl'] ?? 'https://example.com/default-profile.png',
+          'profileImageUrl': data['profileImageUrl'] ?? '',
         };
       } else {
         print('Usuário não encontrado para o email fornecido.');
@@ -148,6 +148,23 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#@_';
     final Random rand = Random();
     return List.generate(8, (index) => chars[rand.nextInt(chars.length)]).join();
+  }
+
+    // Método para obter as disciplinas de um professor pelo UID
+  Future<List<Map<String, dynamic>>> getDisciplinasPorProfessor(String professorUid) async {
+    try {
+      final snapshot = await _db.collection('Disciplinas').where('professorUid', isEqualTo: professorUid).get();
+
+      return snapshot.docs.map((doc) {
+        return {
+          'id': doc.id,
+          ...doc.data() as Map<String, dynamic>,
+        };
+      }).toList();
+    } catch (e) {
+      print('Erro ao buscar disciplinas do professor: $e');
+      return [];
+    }
   }
 
   
