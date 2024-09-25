@@ -65,10 +65,11 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
     }
   }
 
-  @override
+   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Row(
           children: [
             CircleAvatar(
@@ -78,8 +79,18 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
             Text(_studentName ?? 'Carregando...'),
           ],
         ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(
+            color: Colors.grey,
+            height: 1.0,
+          ),
+        ),
       ),
+      
+      
       body: LayoutBuilder(
+        
         builder: (context, constraints) {
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),

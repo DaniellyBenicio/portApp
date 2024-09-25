@@ -64,20 +64,28 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false, 
-        elevation: 0,
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            tooltip: 'Notificações',
-            onPressed: () {
-              Navigator.pushReplacementNamed(context, '/notifications');
-            },
-          ),
-        ],
+  return Scaffold(
+    appBar: AppBar(
+      automaticallyImplyLeading: false,
+      backgroundColor: const Color.fromRGBO(18, 86, 143, 1),
+      elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        tooltip: 'Voltar',
+        onPressed: () {
+          Navigator.pop(context);
+        },
       ),
+      actions: <Widget>[
+        IconButton(
+          icon: const Icon(Icons.notifications),
+          tooltip: 'Notificações',
+          onPressed: () {
+            Navigator.pushReplacementNamed(context, '/notifications');
+          },
+        ),
+      ],
+    ),
       bottomNavigationBar: Menu(
         currentIndex: _currentIndex, //Passa o índice atual para o Menu
         onItemTapped: _onItemTapped, //Callback para item selecionado
