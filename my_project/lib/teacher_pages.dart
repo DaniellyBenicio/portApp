@@ -66,41 +66,7 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
       print('Erro ao buscar disciplinas: $e');
     }
   }
-
-  void _showOptions(BuildContext context, String disciplinaId) {
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return Container(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.edit),
-                title: const Text('Editar'),
-                onTap: () {
-                  // Lógica para editar a disciplina
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.delete),
-                title: const Text('Excluir'),
-                onTap: () async {
-                  // Lógica para excluir a disciplina
-                  await _firestoreService.getDisciplinasPorProfessor(disciplinaId); // Corrigi para usar o método de exclusão
-                  _fetchDisciplinas(); // Atualiza a lista após exclusão
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
+      
   void _showAddDisciplinaDialog() {
     final TextEditingController nomeController = TextEditingController();
     final TextEditingController descricaoController = TextEditingController();
@@ -158,6 +124,132 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
     );
   }
 
+  // Método para editar disciplina
+  void _showEditDisciplinaDialog(String disciplinaId, String nome, String descricao) {
+    final TextEditingController nomeController = TextEditingController(text: nome);
+    final TextEditingController descricaoController = TextEditingController(text: descricao);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Editar Disciplina'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+               controller: nomeController,
+               decoration: const InputDecoration(
+               labelText: 'Nome da Disciplina',
+               filled: false,
+               labelStyle: TextStyle(
+               color: Color.fromRGBO(18, 86, 143, 1), // Cor do texto do rótulo
+                  ),
+                ),
+               style: const TextStyle(
+                color: Colors.black, // Cor do texto digitado
+                 ),
+                ),
+              TextField(
+               controller: descricaoController,
+               decoration: const InputDecoration(
+               labelText: 'Descrição',
+               filled: false,
+               labelStyle: TextStyle(
+               color: Color.fromRGBO(18, 86, 143, 1), // Cor do texto do rótulo
+               ),),
+               style: const TextStyle(
+                color: Colors.black, // Cor do texto digitado
+                ),
+              ),
+            ],
+          ),
+          actions: [  
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Fecha o diálogo
+              },
+               child: const Text(
+                  'Cancelar',
+                  style: TextStyle(
+                  color: Color.fromRGBO(18, 86, 143, 1), // Cor de texto azul
+                 ),
+                ),
+              ),
+            TextButton(
+              onPressed: () async {
+                String? professorUid = FirebaseAuth.instance.currentUser?.uid; // Obtém o UID do professor
+                await _firestoreService.editarDisciplina(
+                  disciplinaId: disciplinaId,
+                  novoNome: nomeController.text,
+                  novaDescricao: descricaoController.text,
+                  professorUid: professorUid ?? '',
+                );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Disciplina editada com sucesso!')),
+                );
+                _fetchDisciplinas(); // Atualiza a lista após editar
+                Navigator.of(context).pop(); // Fecha o diálogo após editar
+              },
+              child: const Text(
+                'Salvar',
+                  style: TextStyle(
+                  color: Color.fromRGBO(18, 86, 143, 1), // Cor de texto azul
+                 ),
+                ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Método para excluir disciplina
+  void _showDeleteConfirmationDialog(String disciplinaId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Excluir Disciplina'),
+          content: const Text('Tem certeza que deseja excluir esta disciplina?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Fecha o diálogo
+              },
+              child: const Text(
+                'Cancelar',
+                  style: TextStyle(
+                  color: Color.fromRGBO(18, 86, 143, 1), // Cor de texto azul
+                 ),
+                ),
+            ),
+            TextButton(
+              onPressed: () async {
+                String? professorUid = FirebaseAuth.instance.currentUser?.uid; // Obtém o UID do professor
+                await _firestoreService.excluirDisciplina(
+                  disciplinaId: disciplinaId,
+                  professorUid: professorUid ?? '',
+                );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Disciplina excluída com sucesso!')),
+                );
+                _fetchDisciplinas(); // Atualiza a lista após excluir
+                Navigator.of(context).pop(); // Fecha o diálogo após excluir
+              },
+              child: const Text(
+                'Excluir',
+                  style: TextStyle(
+                  color: Color.fromRGBO(18, 86, 143, 1), // Cor de texto azul
+                 ),
+                ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -185,7 +277,7 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
         ),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator()) // Exibe um loader enquanto carrega os dados
+          ? const Center(child: CircularProgressIndicator()) // Exibe um loader enquanto carrega os dados
           : SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -198,7 +290,7 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
                       children: [
                         const Text(
                           'Disciplinas',
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                         ),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
@@ -213,41 +305,70 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
                       ],
                     ),
                   ),
-                  // Verifica se a lista de disciplinas está vazia
                   if (_disciplinas.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        'Você ainda não tem disciplinas cadastradas.',
-                        style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                    Center( // Centraliza o texto
+                    child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                       'Nenhuma disciplina cadastrada. Clique em Adicionar para cadastrar nova disciplina.',
+                        style: TextStyle(color: Colors.grey.shade600),
+                        textAlign: TextAlign.center, // Alinha o texto ao centro
                       ),
-                    )
+                    ),
+                  )
                   else
-                    // Exibe a lista de disciplinas
-                    ..._disciplinas.map((disciplina) {
-                      return Container(
-                        margin: const EdgeInsets.all(8.0),
-                        padding: const EdgeInsets.all(8.0),
-                        color: Colors.blue[100], // Cor de fundo da disciplina
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(disciplina['nome'] ?? 'Título aqui', style: const TextStyle(fontSize: 18)),
-                            SizedBox(height: 4), // Espaço entre o nome e a descrição
-                            Text(disciplina['descricao'] ?? 'Descrição aqui', style: const TextStyle(fontSize: 14)),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.more_vert),
-                                  onPressed: () => _showOptions(context, disciplina['id']), // Passa o id da disciplina
-                                ),
-                              ],
+                    ListView.builder(
+                      shrinkWrap: true, // Permite que o ListView tenha um tamanho fixo
+                      physics: const NeverScrollableScrollPhysics(), // Desabilita a rolagem do ListView
+                      itemCount: _disciplinas.length,
+                      itemBuilder: (context, index) {
+                        final disciplina = _disciplinas[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                          child: GestureDetector(
+                          onTap: () {
+                            // Adicionar lógica de abrir disciplina específica.
+                            print('Disciplina clicada: ${disciplina['nome']}');
+                          },
+                          child: Container(
+                          padding: const EdgeInsets.all(10.0), 
+                          child: ListTile(
+                            title: Text(disciplina['nome']),
+                            subtitle: Text(disciplina['descricao']),
+                            trailing: PopupMenuButton<String>(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.0), // Adiciona border radius
+                              ),
+                              onSelected: (value) {
+                                if (value == 'edit') {
+                                  _showEditDisciplinaDialog(disciplina['id'], disciplina['nome'], disciplina['descricao']); // Passa os dados para editar
+                                } else if (value == 'delete') {
+                                  _showDeleteConfirmationDialog(disciplina['id']); // Chama o método para excluir disciplina
+                                } // Implemtar a lógica de enviar convite
+                              },
+                              itemBuilder: (BuildContext context) {
+                                return [
+                                  const PopupMenuItem<String>(
+                                    value: 'edit',
+                                    child: Text('Editar'),
+                                  ),
+                                  const PopupMenuItem<String>(
+                                    value: 'delete',
+                                    child: Text('Excluir'),
+                                  ),
+                                  const PopupMenuItem<String>(
+                                    value: 'enviar',
+                                    child: Text('Enviar Convite'),
+                                  ),
+                                ];
+                              },
                             ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
+                          ),
+                          ),
+                          ),
+                        );
+                      },
+                    ),
                 ],
               ),
             ),

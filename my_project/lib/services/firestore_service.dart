@@ -150,7 +150,7 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
     return List.generate(8, (index) => chars[rand.nextInt(chars.length)]).join();
   }
 
-    // Método para obter as disciplinas de um professor pelo UID
+  // Método para obter as disciplinas de um professor pelo UID
   Future<List<Map<String, dynamic>>> getDisciplinasPorProfessor(String professorUid) async {
     try {
       final snapshot = await _db.collection('Disciplinas').where('professorUid', isEqualTo: professorUid).get();
@@ -166,6 +166,66 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
       return [];
     }
   }
+
+  // Método para editar nome e descrição da disciplina pelo ID
+  Future<void> editarDisciplina({
+    required String disciplinaId,
+    required String novoNome,
+    required String novaDescricao,
+    required String professorUid, // Adicione este parâmetro
+  }) async {
+    try {
+      // Obtendo a disciplina para verificar o professorUid
+      final docSnapshot = await _db.collection('Disciplinas').doc(disciplinaId).get();
+      
+      if (docSnapshot.exists) {
+        final disciplinaData = docSnapshot.data() as Map<String, dynamic>;
+
+        // Verificando se o professorUid corresponde ao da disciplina
+        if (disciplinaData['professorUid'] == professorUid) {
+          await _db.collection('Disciplinas').doc(disciplinaId).update({
+            'nome': novoNome,
+            'descricao': novaDescricao,
+          });
+          print('Disciplina atualizada com sucesso.');
+        } else {
+          print('Você não tem permissão para editar esta disciplina.');
+        }
+      } else {
+        print('Disciplina não encontrada.');
+      }
+    } catch (e) {
+      print('Erro ao atualizar disciplina: $e');
+    }
+  }
+
+  // Método para excluir disciplina pelo ID
+  Future<void> excluirDisciplina({
+    required String disciplinaId,
+    required String professorUid,
+  }) async {
+    try {
+      // Obtendo a disciplina para verificar o professorUid
+      final docSnapshot = await _db.collection('Disciplinas').doc(disciplinaId).get();
+      
+      if (docSnapshot.exists) {
+        final disciplinaData = docSnapshot.data() as Map<String, dynamic>;
+
+        // Verificando se o professorUid corresponde ao da disciplina
+        if (disciplinaData['professorUid'] == professorUid) {
+          await _db.collection('Disciplinas').doc(disciplinaId).delete();
+          print('Disciplina excluída com sucesso.');
+        } else {
+          print('Você não tem permissão para excluir esta disciplina.');
+        }
+      } else {
+        print('Disciplina não encontrada.');
+      }
+    } catch (e) {
+      print('Erro ao excluir disciplina: $e');
+    }
+  }
+
 
   
 // Método para inscrever um aluno em uma disciplina
