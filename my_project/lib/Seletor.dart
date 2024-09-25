@@ -2,12 +2,32 @@ import 'package:flutter/material.dart';
 import 'Login.dart';
 
 class Seletor extends StatelessWidget {
-  const Seletor({super.key});//Construtor da classe 
+  const Seletor({super.key}); // Construtor da classe 
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: UserSelectionBody(),
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color.fromRGBO(18, 86, 143, 1),
+      ),
+      body: const SingleChildScrollView(
+        child: UserSelectionBody(),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        color: const Color.fromRGBO(18, 86, 143, 1),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Text(
+                '© 2024 PortApp',
+                style: TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -22,7 +42,7 @@ class UserSelectionBody extends StatelessWidget {
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(
-            maxWidth: 600, 
+            maxWidth: 600,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -54,7 +74,7 @@ class UserSelectionBody extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const Login(userType: 'Aluno'),//Cria uma nova rota para a página de login com o tipo aluno
+                          builder: (context) => const Login(userType: 'Aluno'), // Cria uma nova rota para a página de login com o tipo aluno
                         ),
                       );
                     },
@@ -67,7 +87,7 @@ class UserSelectionBody extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const Login(userType: 'Professor'),//Cria uma nova rota para a página de login com o tipo professor
+                          builder: (context) => const Login(userType: 'Professor'), // Cria uma nova rota para a página de login com o tipo professor
                         ),
                       );
                     },
@@ -103,11 +123,11 @@ class UserTypeCard extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            mainAxisSize: MainAxisSize.min, 
+            mainAxisSize: MainAxisSize.min,
             children: [
               CircleAvatar(
                 radius: 40,
-                backgroundColor: const Color.fromRGBO(18, 86, 143, 1), 
+                backgroundColor: const Color.fromRGBO(18, 86, 143, 1),
                 child: Icon(
                   icon,
                   size: 50,
