@@ -2,6 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+// Definindo constantes para os estilos
+const double paddingValue = 16.0;
+const double spacingValue = 16.0;
+const double smallSpacingValue = 8.0;
+const TextStyle headingStyle = TextStyle(fontSize: 18);
+const InputDecoration textFieldDecoration = InputDecoration(
+  labelText: 'Código de Acesso',
+  border: OutlineInputBorder(),
+);
+
 class AlunoDisciplinesPage extends StatefulWidget {
   @override
   _AlunoDisciplinesPageState createState() => _AlunoDisciplinesPageState();
@@ -178,15 +188,76 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
     _showSnackBar('$message: ${error.toString()}');
   }
 
+  void _showAddDisciplinaDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Adicionar Disciplina'),
+          content: TextField(
+            controller: codigoController,
+            decoration: const InputDecoration(
+              labelText: 'Código de Acesso',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _buscarDisciplinaPorCodigo();
+              },
+              child: const Text('Adicionar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Center(child: Text('Disciplinas')),
-        backgroundColor: Colors.blue,
+        automaticallyImplyLeading: false,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Disciplinas',
+              style: TextStyle(
+                color: Colors.black,
+                fontFamily: 'Inter',
+                fontSize: 36,
+                fontStyle: FontStyle.normal,
+                fontWeight: FontWeight.w600,
+                height: 1.0,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.add),
+              tooltip: 'Adicionar Disciplina',
+              color: Colors.green,
+              onPressed: _showAddDisciplinaDialog,
+            ),
+          ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1.0),
+          child: Container(
+            color: Colors.grey,
+            height: 1.0,
+          ),
+        ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(paddingValue),
         child: Row(
           children: [
             Expanded(
@@ -202,19 +273,19 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
                       border: OutlineInputBorder(),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: spacingValue),
                   ElevatedButton(
                     onPressed: loading ? null : _buscarDisciplinasPorNome,
                     child: loading ? const LinearProgressIndicator() : const Text('Buscar'),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: spacingValue),
                   Expanded(
                     child: disciplinas.isNotEmpty
                         ? ListView.builder(
                             itemCount: disciplinas.length,
                             itemBuilder: (context, index) {
                               return Card(
-                                margin: const EdgeInsets.symmetric(vertical: 8),
+                                margin: const EdgeInsets.symmetric(vertical: smallSpacingValue),
                                 child: ListTile(
                                   title: Text(disciplinas[index]['nome']),
                                   subtitle: Text(disciplinas[index]['descricao']),
@@ -235,30 +306,27 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
                 ],
               ),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              flex: 1,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Entrar em uma Disciplina pelo Código', style: TextStyle(fontSize: 18)),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: codigoController,
-                    decoration: const InputDecoration(
-                      labelText: 'Código de Acesso',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _buscarDisciplinaPorCodigo,
-                    child: const Text('Entrar na Disciplina'),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-              ),
-            ),
+            // const SizedBox(width: spacingValue),
+            // Expanded(
+            //   flex: 1,
+            //   child: Column(
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: [
+            //       const Text('Entrar em uma Disciplina pelo Código', style: headingStyle),
+            //       const SizedBox(height: smallSpacingValue),
+            //       TextField(
+            //         controller: codigoController,
+            //         decoration: textFieldDecoration,
+            //       ),
+            //       const SizedBox(height: spacingValue),
+            //       ElevatedButton(
+            //         onPressed: _buscarDisciplinaPorCodigo,
+            //         child: const Text('Entrar na Disciplina'),
+            //       ),
+            //       const SizedBox(height: spacingValue),
+            //     ],
+            //   ),
+            // ),
           ],
         ),
       ),
