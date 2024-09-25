@@ -115,7 +115,7 @@ class AboutUsPage extends StatelessWidget {
       'Danielly Benício',
       'Daniel Teixeira',
       'Amanda Souza',
-      'Luan'
+      'Luan Fernandes'
     ]; 
 
     return Column(
