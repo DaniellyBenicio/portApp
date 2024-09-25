@@ -79,68 +79,78 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
           ],
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Meus Portfólios',
-              style: TextStyle(
-                fontSize: 25,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            // Filtros
-            Container(
-              decoration: BoxDecoration(
-                color: Color.fromRGBO(18, 86, 143, 1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-              child: const Text(
-                'Filtrar por',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(height: 15),
-            _buildFilterRow(),
-            const SizedBox(height: 20),
-            Container(
-              decoration: BoxDecoration(
-                color: const Color.fromRGBO(18, 86, 143, 1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-              child: const Text(
-                'Portfólios',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            if (_isLoading) // Exibir loading enquanto busca os dados
-              const Center(
-                child: CircularProgressIndicator(),
-              )
-            else
-              const Center(
-                child: Text(
-                  'Você ainda não possui portfólios',
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Meus Portfólios',
                   style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
-          ],
-        ),
+                const SizedBox(height: 20),
+                // Filtros
+                SizedBox(
+                  width: double.infinity,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color.fromRGBO(18, 86, 143, 1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                    child: const Text(
+                      'Filtrar por',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                _buildFilterRow(),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color.fromRGBO(18, 86, 143, 1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                    child: const Text(
+                      'Portfólios',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                if (_isLoading) // Exibir loading enquanto busca os dados
+                  const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                else
+                  const Center(
+                    child: Text(
+                      'Você ainda não possui portfólios',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
