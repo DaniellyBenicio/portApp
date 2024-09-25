@@ -273,8 +273,19 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Center(child: Text('Disciplinas')),
-        backgroundColor: Colors.blue,
+        automaticallyImplyLeading: false,
+        title:  const Text(
+              'Disciplinas',
+              style: TextStyle(
+                color: Colors.black,
+                fontFamily: 'Inter',
+                fontSize: 36,
+                fontStyle: FontStyle.normal,
+                fontWeight: FontWeight.w600,
+                height: 1.0,
+              ),
+            ),
+        
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
