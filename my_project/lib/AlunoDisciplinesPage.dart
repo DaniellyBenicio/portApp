@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-// Página principal para exibir as disciplinas do aluno
 class AlunoDisciplinesPage extends StatefulWidget {
   @override
   _AlunoDisciplinesPageState createState() => _AlunoDisciplinesPageState();
@@ -32,20 +31,16 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
         'alunoUid': user.uid,
         'disciplinaId': disciplinaId,
       });
-
       _showSnackBar('Matriculado na disciplina com sucesso!');
       await _recuperarDisciplinasMatriculadas();
     } catch (e) {
-      print('Erro ao matricular aluno: ${e.runtimeType}: $e');
-      _showSnackBar('Erro ao matricular aluno: ${e.toString()}');
+      _handleError('Erro ao matricular aluno', e);
     }
   }
 
   Future<void> _recuperarDisciplinasMatriculadas() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      return;
-    }
+    if (user == null) return;
 
     disciplinas.clear();
     try {
@@ -54,26 +49,23 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
           .where('alunoUid', isEqualTo: user.uid)
           .get();
 
-      if (snapshot.docs.isNotEmpty) {
-        for (var doc in snapshot.docs) {
-          final disciplinaId = doc['disciplinaId'];
-          final disciplinaSnapshot = await FirebaseFirestore.instance
-              .collection('Disciplinas')
-              .doc(disciplinaId)
-              .get();
+      for (var doc in snapshot.docs) {
+        final disciplinaId = doc['disciplinaId'];
+        final disciplinaSnapshot = await FirebaseFirestore.instance
+            .collection('Disciplinas')
+            .doc(disciplinaId)
+            .get();
 
-          if (disciplinaSnapshot.exists) {
-            disciplinas.add({
-              'id': disciplinaSnapshot.id,
-              ...disciplinaSnapshot.data() as Map<String, dynamic>,
-            });
-          }
+        if (disciplinaSnapshot.exists) {
+          disciplinas.add({
+            'id': disciplinaSnapshot.id,
+            ...disciplinaSnapshot.data() as Map<String, dynamic>,
+          });
         }
       }
       setState(() {});
     } catch (e) {
-      print('Erro ao recuperar disciplinas matriculadas: ${e.runtimeType}: $e');
-      _showSnackBar('Erro ao recuperar disciplinas matriculadas: ${e.toString()}');
+      _handleError('Erro ao recuperar disciplinas matriculadas', e);
     }
   }
 
@@ -95,10 +87,24 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
         return;
       }
 
+      final matriculasSnapshot = await FirebaseFirestore.instance
+          .collection('Matriculas')
+          .where('alunoUid', isEqualTo: user.uid)
+          .get();
+
+      if (matriculasSnapshot.docs.isEmpty) {
+        _showSnackBar('Você não está matriculado em nenhuma disciplina.');
+        return;
+      }
+
+      final List<String> disciplinaIds = matriculasSnapshot.docs
+          .map((doc) => doc['disciplinaId'] as String)
+          .toList();
+
       final snapshot = await FirebaseFirestore.instance
           .collection('Disciplinas')
           .where('nome', isEqualTo: nomeDisciplina)
-          .where('professorUid', isEqualTo: user.uid)
+          .where(FieldPath.documentId, whereIn: disciplinaIds)
           .get();
 
       if (snapshot.docs.isNotEmpty) {
@@ -110,11 +116,10 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
         }).toList();
         nomeController.clear();
       } else {
-        _showSnackBar('Disciplina não encontrada');
+        _showSnackBar('Disciplina não encontrada entre suas disciplinas matriculadas.');
       }
     } catch (e) {
-      print('Erro ao buscar disciplinas: ${e.runtimeType}: $e');
-      _showSnackBar('Erro ao buscar disciplinas: ${e.toString()}');
+      _handleError('Erro ao buscar disciplinas', e);
     } finally {
       setState(() {
         loading = false;
@@ -146,7 +151,6 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
           'id': snapshot.docs.first.id,
           ...snapshot.docs.first.data() as Map<String, dynamic>,
         };
-
         await _matricularAluno(disciplina['id']);
         Navigator.push(
           context,
@@ -159,8 +163,7 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
         _showSnackBar('Código de acesso inválido ou disciplina não encontrada');
       }
     } catch (e) {
-      print('Erro ao buscar disciplina: ${e.runtimeType}: $e');
-      _showSnackBar('Erro ao buscar disciplina: ${e.toString()}');
+      _handleError('Erro ao buscar disciplina', e);
     }
   }
 
@@ -168,6 +171,11 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
+  }
+
+  void _handleError(String message, dynamic error) {
+    print('$message: ${error.runtimeType}: $error');
+    _showSnackBar('$message: ${error.toString()}');
   }
 
   @override
@@ -197,7 +205,7 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: loading ? null : _buscarDisciplinasPorNome,
-                    child: loading ? const CircularProgressIndicator() : const Text('Buscar'),
+                    child: loading ? const LinearProgressIndicator() : const Text('Buscar'),
                   ),
                   const SizedBox(height: 16),
                   Expanded(
@@ -228,7 +236,6 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
               ),
             ),
             const SizedBox(width: 16),
-            // Entrar em uma disciplina pelo código
             Expanded(
               flex: 1,
               child: Column(
@@ -259,7 +266,6 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
   }
 }
 
-// Página para exibir os detalhes da disciplina
 class DisciplinaDetalhesPage extends StatelessWidget {
   final Map<String, dynamic> disciplina;
 
@@ -270,17 +276,15 @@ class DisciplinaDetalhesPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(disciplina['nome']),
-        backgroundColor: Colors.blue,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(disciplina['descricao'], style: const TextStyle(fontSize: 16)),
+            Text('Descrição: ${disciplina['descricao']}', style: TextStyle(fontSize: 16)),
             const SizedBox(height: 16),
-            const Text('Tarefas:', style: TextStyle(fontSize: 18)),
-            // Aqui você pode adicionar mais detalhes sobre as tarefas da disciplina
+            // Outras informações da disciplina podem ser exibidas aqui.
           ],
         ),
       ),
