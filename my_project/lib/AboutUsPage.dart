@@ -26,6 +26,9 @@ class AboutUsPage extends StatelessWidget {
                   fontSize: 28, //Define o tamanho da fonte
                   fontWeight: FontWeight.bold, //Define a fonte como negrito
                   color: Colors.blue, //Define a cor do texto
+                  shadows: [
+               
+                  ],
                 ),
               ),
             ),
@@ -50,6 +53,9 @@ class AboutUsPage extends StatelessWidget {
                   fontSize: 24, 
                   fontWeight: FontWeight.bold, 
                   color: Colors.blue, 
+                  shadows: [
+                  
+                  ],
                 ),
               ),
             ),
@@ -74,6 +80,9 @@ class AboutUsPage extends StatelessWidget {
                   fontSize: 20, 
                   fontWeight: FontWeight.bold, 
                   color: Colors.blue, 
+                  shadows: [
+                    
+                  ],
                 ),
               ),
             ),
@@ -123,16 +132,32 @@ class AboutUsPage extends StatelessWidget {
       children: teamMembers.map((member) { 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 4.0), 
-          child: Row(
-            mainAxisSize: MainAxisSize.min, 
-            children: [
-              const Icon(Icons.person, color: Colors.blue, size: 20), 
-              const SizedBox(width: 10), 
-              Text(
-                member, // Exibe o nome do membro da equipe.
-                style: const TextStyle(fontSize: 16), 
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 4.0,
+                  offset: Offset(2.0, 2.0),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min, 
+                children: [
+                  const Icon(Icons.person, color: Colors.blue, size: 20), 
+                  const SizedBox(width: 10), 
+                  Text(
+                    member, // Exibe o nome do membro da equipe.
+                    style: const TextStyle(fontSize: 16), 
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         );
       }).toList(), // Converte a lista mapeada em uma lista de Widgets.
