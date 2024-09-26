@@ -72,6 +72,7 @@ class _HomePageState extends State<HomePage> {
       leading: IconButton(
         icon: const Icon(Icons.arrow_back),
         tooltip: 'Voltar',
+        color: Colors.white,
         onPressed: () {
           Navigator.pop(context);
         },
@@ -80,6 +81,7 @@ class _HomePageState extends State<HomePage> {
         IconButton(
           icon: const Icon(Icons.notifications),
           tooltip: 'Notificações',
+          color: Colors.white,
           onPressed: () {
             Navigator.pushReplacementNamed(context, '/notifications');
           },
