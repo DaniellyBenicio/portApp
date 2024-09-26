@@ -8,8 +8,8 @@ import 'pages/Profile/EditProfilePage.dart';
 import 'pages/Profile/ChangePasswordPage.dart';
 import 'pages/Profile/DeleteAccountPage.dart';
 import 'pages/Profile/AboutUsPage.dart'; 
-import 'Login.dart';
-import 'Register.dart';
+import 'pages/Login/Login.dart';
+import 'pages/Login/Register.dart';
 
 void main() async {
   // Garante a inicialização dos widgets do Flutter antes que qualquer ação seja realizada
