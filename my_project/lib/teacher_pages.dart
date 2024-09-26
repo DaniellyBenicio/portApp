@@ -51,7 +51,6 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
       setState(() {
         _isLoading = false;
       });
-      print('Erro ao buscar dados do professor: $e');
     }
   }
 
@@ -266,7 +265,7 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
                   : Colors.transparent,
               child: profileImageUrl == null || profileImageUrl!.isEmpty
                   ? Text(
-                      _teacherName?.substring(0, 1).toUpperCase() ?? 'P',
+                      _teacherName?.substring(0, 1).toUpperCase() ?? '',
                       style: const TextStyle(fontSize: 20, color: Colors.white),
                     )
                   : null,
