@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'seletor.dart'; 
+import '../../seletor.dart'; 
 
 class SettingsPage extends StatelessWidget {
   final String userType;

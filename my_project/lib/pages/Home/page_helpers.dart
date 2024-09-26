@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'HomeStudent/student_pages.dart';
 import 'HomeTeacher/teacher_pages.dart';
-import '../../settings_page.dart';
+import 'settings_page.dart';
 import '../Discipline/DisciplinePage/disciplines_page.dart';
 import '../Discipline/Aluno_disciplines/aluno_disciplines_page.dart';
 

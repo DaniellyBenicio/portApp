@@ -3,7 +3,7 @@ import 'package:firebase_core/firebase_core.dart'; //integra firebase
 import 'firebase_options.dart';
 import 'Seletor.dart'; 
 import 'pages/Home/home_page.dart';
-import 'Settings_Page.dart'; 
+import './pages/Home/settings_page.dart'; 
 import 'pages/Profile/EditProfilePage.dart';
 import 'pages/Profile/ChangePasswordPage.dart';
 import 'pages/Profile/DeleteAccountPage.dart';
