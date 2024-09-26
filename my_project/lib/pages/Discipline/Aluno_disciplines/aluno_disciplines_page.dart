@@ -1,16 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-// Definindo constantes para os estilos
-const double paddingValue = 16.0;
-const double spacingValue = 16.0;
-const double smallSpacingValue = 8.0;
-const TextStyle headingStyle = TextStyle(fontSize: 18);
-const InputDecoration textFieldDecoration = InputDecoration(
-  labelText: 'Código de Acesso',
-  border: OutlineInputBorder(),
-);
+import './services/firebase_service.dart';
+import './widgets/custom_snackbar.dart';
+import 'disciplina_detalhes_page.dart';
 
 class AlunoDisciplinesPage extends StatefulWidget {
   @override
@@ -27,25 +20,6 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
   void initState() {
     super.initState();
     _recuperarDisciplinasMatriculadas();
-  }
-
-  Future<void> _matricularAluno(String disciplinaId) async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      _showSnackBar('Usuário não autenticado');
-      return;
-    }
-
-    try {
-      await FirebaseFirestore.instance.collection('Matriculas').add({
-        'alunoUid': user.uid,
-        'disciplinaId': disciplinaId,
-      });
-      _showSnackBar('Matriculado na disciplina com sucesso!');
-      await _recuperarDisciplinasMatriculadas();
-    } catch (e) {
-      _handleError('Erro ao matricular aluno', e);
-    }
   }
 
   Future<void> _recuperarDisciplinasMatriculadas() async {
@@ -75,14 +49,14 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
       }
       setState(() {});
     } catch (e) {
-      _handleError('Erro ao recuperar disciplinas matriculadas', e);
+      handleError('Erro ao recuperar disciplinas matriculadas', e);
     }
   }
 
   Future<void> _buscarDisciplinasPorNome() async {
     final nomeDisciplina = nomeController.text.trim();
     if (nomeDisciplina.isEmpty) {
-      _showSnackBar('Por favor, insira um nome de disciplina');
+      showSnackBar(context, 'Por favor, insira um nome de disciplina');
       return;
     }
 
@@ -93,7 +67,7 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        _showSnackBar('Usuário não autenticado');
+        showSnackBar(context, 'Usuário não autenticado');
         return;
       }
 
@@ -103,7 +77,7 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
           .get();
 
       if (matriculasSnapshot.docs.isEmpty) {
-        _showSnackBar('Você não está matriculado em nenhuma disciplina.');
+        showSnackBar(context, 'Você não está matriculado em nenhuma disciplina.');
         return;
       }
 
@@ -126,10 +100,10 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
         }).toList();
         nomeController.clear();
       } else {
-        _showSnackBar('Disciplina não encontrada entre suas disciplinas matriculadas.');
+        showSnackBar(context, 'Disciplina não encontrada entre suas disciplinas matriculadas.');
       }
     } catch (e) {
-      _handleError('Erro ao buscar disciplinas', e);
+      handleError('Erro ao buscar disciplinas', e);
     } finally {
       setState(() {
         loading = false;
@@ -140,14 +114,14 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
   Future<void> _buscarDisciplinaPorCodigo() async {
     final codigoAcesso = codigoController.text.trim();
     if (codigoAcesso.isEmpty) {
-      _showSnackBar('Por favor, insira um código de acesso');
+      showSnackBar(context, 'Por favor, insira um código de acesso');
       return;
     }
 
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) {
-        _showSnackBar('Usuário não autenticado');
+        showSnackBar(context, 'Usuário não autenticado');
         return;
       }
 
@@ -161,7 +135,7 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
           'id': snapshot.docs.first.id,
           ...snapshot.docs.first.data() as Map<String, dynamic>,
         };
-        await _matricularAluno(disciplina['id']);
+        await matricularAluno(disciplina['id']);
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -170,22 +144,11 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
         );
         codigoController.clear();
       } else {
-        _showSnackBar('Código de acesso inválido ou disciplina não encontrada');
+        showSnackBar(context, 'Código de acesso inválido ou disciplina não encontrada');
       }
     } catch (e) {
-      _handleError('Erro ao buscar disciplina', e);
+      handleError('Erro ao buscar disciplina', e);
     }
-  }
-
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
-
-  void _handleError(String message, dynamic error) {
-    print('$message: ${error.runtimeType}: $error');
-    _showSnackBar('$message: ${error.toString()}');
   }
 
   void _showAddDisciplinaDialog() {
@@ -257,7 +220,7 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(paddingValue),
+        padding: const EdgeInsets.all(16.0),
         child: Row(
           children: [
             Expanded(
@@ -273,19 +236,19 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
                       border: OutlineInputBorder(),
                     ),
                   ),
-                  const SizedBox(height: spacingValue),
+                  const SizedBox(height: 16.0),
                   ElevatedButton(
                     onPressed: loading ? null : _buscarDisciplinasPorNome,
                     child: loading ? const LinearProgressIndicator() : const Text('Buscar'),
                   ),
-                  const SizedBox(height: spacingValue),
+                  const SizedBox(height: 16.0),
                   Expanded(
                     child: disciplinas.isNotEmpty
                         ? ListView.builder(
                             itemCount: disciplinas.length,
                             itemBuilder: (context, index) {
                               return Card(
-                                margin: const EdgeInsets.symmetric(vertical: smallSpacingValue),
+                                margin: const EdgeInsets.symmetric(vertical: 8.0),
                                 child: ListTile(
                                   title: Text(disciplinas[index]['nome']),
                                   subtitle: Text(disciplinas[index]['descricao']),
@@ -306,53 +269,6 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
                 ],
               ),
             ),
-            // const SizedBox(width: spacingValue),
-            // Expanded(
-            //   flex: 1,
-            //   child: Column(
-            //     crossAxisAlignment: CrossAxisAlignment.start,
-            //     children: [
-            //       const Text('Entrar em uma Disciplina pelo Código', style: headingStyle),
-            //       const SizedBox(height: smallSpacingValue),
-            //       TextField(
-            //         controller: codigoController,
-            //         decoration: textFieldDecoration,
-            //       ),
-            //       const SizedBox(height: spacingValue),
-            //       ElevatedButton(
-            //         onPressed: _buscarDisciplinaPorCodigo,
-            //         child: const Text('Entrar na Disciplina'),
-            //       ),
-            //       const SizedBox(height: spacingValue),
-            //     ],
-            //   ),
-            // ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class DisciplinaDetalhesPage extends StatelessWidget {
-  final Map<String, dynamic> disciplina;
-
-  const DisciplinaDetalhesPage({Key? key, required this.disciplina}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(disciplina['nome']),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Descrição: ${disciplina['descricao']}', style: TextStyle(fontSize: 16)),
-            const SizedBox(height: 16),
-            // Outras informações da disciplina podem ser exibidas aqui.
           ],
         ),
       ),

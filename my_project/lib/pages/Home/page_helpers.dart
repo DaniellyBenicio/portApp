@@ -3,7 +3,7 @@ import '../../student_pages.dart';
 import '../../teacher_pages.dart';
 import '../../settings_page.dart';
 import '../../disciplinesPage.dart';
-import '../../AlunoDisciplinesPage.dart';
+import '../Discipline/Aluno_disciplines/aluno_disciplines_page.dart';
 
 const String userTypeAluno = 'Aluno';
 const String userTypeProfessor = 'Professor';

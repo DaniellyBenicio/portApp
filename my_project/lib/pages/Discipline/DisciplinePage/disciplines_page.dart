@@ -3,7 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:my_project/services/firestore_service.dart';
 import 'package:flutter/services.dart';
-import 'PortfolioPage.dart';
+import 'portfolio_page.dart';
+import './widgets/custom_snackbar.dart';
 
 class DisciplinesPage extends StatefulWidget {
   @override
@@ -11,34 +12,34 @@ class DisciplinesPage extends StatefulWidget {
 }
 
 class _DisciplinesPageState extends State<DisciplinesPage> {
-  final FirestoreService _firestoreService = FirestoreService(); //Instância do serviço Firestore.
-  List<Map<String, dynamic>> disciplinas = []; //Lista para armazenar as disciplinas.
-  String? professorUid; //UID do professor autenticado.
+  final FirestoreService _firestoreService = FirestoreService(); // Instância do serviço Firestore.
+  List<Map<String, dynamic>> disciplinas = []; // Lista para armazenar as disciplinas.
+  String? professorUid; // UID do professor autenticado.
 
   @override
   void initState() {
     super.initState();
-    _getCurrentUserUid(); //Busca o UID do professor ao iniciar.
-    _fetchDisciplinas(); //Carrega as disciplinas do professor.
+    _getCurrentUserUid(); // Busca o UID do professor ao iniciar.
+    _fetchDisciplinas(); // Carrega as disciplinas do professor.
   }
 
   void _getCurrentUserUid() {
-    User? user = FirebaseAuth.instance.currentUser;//Obtém o usuário autenticado
+    User? user = FirebaseAuth.instance.currentUser; // Obtém o usuário autenticado
     if (user != null) {
-      professorUid = user.uid; //Armazena o UID do professor autenticado
+      professorUid = user.uid; // Armazena o UID do professor autenticado
       print(professorUid);
     } else {
       print('Nenhum usuário autenticado');
     }
   }
 
-  Future<void> _fetchDisciplinas() async {//Retorna se o UID não estiver disponível
+  Future<void> _fetchDisciplinas() async { // Retorna se o UID não estiver disponível
     if (professorUid == null) return;
 
     try {
       final snapshot = await FirebaseFirestore.instance
           .collection('Disciplinas')
-          .where('professorUid', isEqualTo: professorUid) //Filtra pelas disciplinas do professor
+          .where('professorUid', isEqualTo: professorUid) // Filtra pelas disciplinas do professor
           .get();
 
       setState(() {
@@ -46,7 +47,7 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
           return {
             'id': doc.id,
             'codigoAcesso': doc.data()['codigoAcesso'] ?? '',
-            ...doc.data() as Map<String, dynamic>,//Extrai dados do documento
+            ...doc.data() as Map<String, dynamic>, // Extrai dados do documento
           };
         }).toList();
       });
@@ -87,22 +88,12 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
             TextButton(
               onPressed: () async {
                 if (nomeController.text.isEmpty || descricaoController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: const Text('Nome e descrição são obrigatórios!'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
+                  showSnackBar(context, 'Nome e descrição são obrigatórios!');
                   return;
                 }
 
                 if (professorUid == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Usuário não autenticado!'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
+                  showSnackBar(context, 'Usuário não autenticado!');
                   return;
                 }
 
@@ -117,13 +108,13 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
                 if (codigoAcesso != null) {
                   setState(() {
                     disciplinas.add({
-                      'id': 'novo_id', //Adiciona nova disciplina à lista
+                      'id': 'novo_id', // Adiciona nova disciplina à lista
                       'nome': nomeController.text,
                       'descricao': descricaoController.text,
                       'codigoAcesso': codigoAcesso,
                     });
                   });
-                  //Exibe um diálogo com o código de acesso da nova disciplina
+                  // Exibe um diálogo com o código de acesso da nova disciplina
                   showDialog(
                     context: context,
                     builder: (context) {
@@ -145,12 +136,7 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
                                 icon: const Icon(Icons.copy),
                                 onPressed: () {
                                   Clipboard.setData(ClipboardData(text: codigoAcesso));
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Código copiado para a área de transferência!'),
-                                      duration: Duration(seconds: 2),
-                                    ),
-                                  );
+                                  showSnackBar(context, 'Código copiado para a área de transferência!');
                                 },
                                 tooltip: 'Copiar Código',
                               ),
@@ -169,12 +155,7 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
                     },
                   );
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Disciplina criada com sucesso!'),
-                      duration: Duration(seconds: 5),
-                    ),
-                  );
+                  showSnackBar(context, 'Disciplina criada com sucesso!');
                 }
               },
               child: const Text('Criar'),
@@ -249,12 +230,7 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
               onPressed: () async {
                 try {
                   await FirebaseFirestore.instance.collection('Disciplinas').doc(disciplinaId).delete();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Disciplina excluída com sucesso!'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
+                  showSnackBar(context, 'Disciplina excluída com sucesso!');
                   _fetchDisciplinas();
                 } catch (e) {
                   print('Erro ao deletar disciplina: $e');
@@ -274,18 +250,17 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title:  const Text(
-              'Disciplinas',
-              style: TextStyle(
-                color: Colors.black,
-                fontFamily: 'Inter',
-                fontSize: 36,
-                fontStyle: FontStyle.normal,
-                fontWeight: FontWeight.w600,
-                height: 1.0,
-              ),
-            ),
-        
+        title: const Text(
+          'Disciplinas',
+          style: TextStyle(
+            color: Colors.black,
+            fontFamily: 'Inter',
+            fontSize: 36,
+            fontStyle: FontStyle.normal,
+            fontWeight: FontWeight.w600,
+            height: 1.0,
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -321,7 +296,7 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
                         textAlign: TextAlign.justify,
                       ),
                       const SizedBox(height: 8),
-                      if (disciplina['codigoAcesso'] != null && disciplina['codigoAcesso'].isNotEmpty) 
+                      if (disciplina['codigoAcesso'] != null && disciplina['codigoAcesso'].isNotEmpty)
                         Text(
                           'Código de Acesso: ${disciplina['codigoAcesso']}',
                           style: const TextStyle(fontWeight: FontWeight.bold),
