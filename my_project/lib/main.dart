@@ -4,10 +4,10 @@ import 'firebase_options.dart';
 import 'Seletor.dart'; 
 import 'pages/Home/home_page.dart';
 import 'Settings_Page.dart'; 
-import 'EditProfilePage.dart';
-import 'ChangePasswordPage.dart';
-import 'DeleteAccountPage.dart';
-import 'AboutUsPage.dart'; 
+import 'pages/Profile/EditProfilePage.dart';
+import 'pages/Profile/ChangePasswordPage.dart';
+import 'pages/Profile/DeleteAccountPage.dart';
+import 'pages/Profile/AboutUsPage.dart'; 
 import 'Login.dart';
 import 'Register.dart';
 
