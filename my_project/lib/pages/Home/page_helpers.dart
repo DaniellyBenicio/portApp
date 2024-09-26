@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import '../../student_pages.dart';
-import '../../teacher_pages.dart';
+import 'HomeStudent/student_pages.dart';
+import 'HomeTeacher/teacher_pages.dart';
 import '../../settings_page.dart';
-import '../../disciplinesPage.dart';
+import '../Discipline/DisciplinePage/disciplines_page.dart';
 import '../Discipline/Aluno_disciplines/aluno_disciplines_page.dart';
 
 const String userTypeAluno = 'Aluno';
 const String userTypeProfessor = 'Professor';
 
-// Método que retorna as páginas comuns
+// Método que retorRna as páginas comuns
 List<Widget> _getCommonPages(String userType) {
   return [
     SettingsPage(userType: userType),

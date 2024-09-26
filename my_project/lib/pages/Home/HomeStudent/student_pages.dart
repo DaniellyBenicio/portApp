@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:my_project/services/firestore_service.dart';
+import 'package:my_project/pages/Home/HomeStudent/widgets/custom_avatar.dart';
 
 class StudentPortfolioPage extends StatefulWidget {
   const StudentPortfolioPage({super.key});
@@ -30,7 +31,7 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
         String email = user.email ?? "";
         Map<String, String>? userData = await _firestoreService.getNomeAndImageByEmail(email);
         if (userData != null) {
-          String fullName =  userData['nome'] ?? 'Aluno';
+          String fullName = userData['nome'] ?? 'Aluno';
           List<String> nameParts = fullName.split(' ');
           String firstName = nameParts.length >= 2
               ? '${nameParts[0]} ${nameParts[1]}'
@@ -68,26 +69,16 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
     }
   }
 
-   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Row(
           children: [
-            CircleAvatar(
-              backgroundImage: profileImageUrl != null && profileImageUrl!.isNotEmpty
-                  ? NetworkImage(profileImageUrl!)
-                  : null,
-              backgroundColor: profileImageUrl == null || profileImageUrl!.isEmpty
-                  ? const Color.fromRGBO(18, 86, 143, 1)
-                  : Colors.transparent,
-              child: profileImageUrl == null || profileImageUrl!.isEmpty
-                ? Text(
-                  _studentName?.substring(0, 1).toUpperCase() ?? '',
-                  style: const TextStyle(fontSize: 20, color: Colors.white),
-                )
-              : null,
+            CustomAvatar(
+              profileImageUrl: profileImageUrl,
+              studentName: _studentName,
             ),
             const SizedBox(width: 10),
             Text(_studentName ?? 'Carregando...'),
@@ -101,10 +92,7 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
           ),
         ),
       ),
-      
-      
       body: LayoutBuilder(
-        
         builder: (context, constraints) {
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),

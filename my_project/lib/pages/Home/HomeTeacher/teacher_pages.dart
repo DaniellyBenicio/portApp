@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:my_project/services/firestore_service.dart';
+import 'package:my_project/pages/Home/HomeTeacher/widgets/custom_avatar.dart';
 
 class TeacherPortfolioPage extends StatefulWidget {
   const TeacherPortfolioPage({super.key});
@@ -65,7 +66,7 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
       print('Erro ao buscar disciplinas: $e');
     }
   }
-      
+
   void _showAddDisciplinaDialog() {
     final TextEditingController nomeController = TextEditingController();
     final TextEditingController descricaoController = TextEditingController();
@@ -137,44 +138,45 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-               controller: nomeController,
-               decoration: const InputDecoration(
-               labelText: 'Nome da Disciplina',
-               filled: false,
-               labelStyle: TextStyle(
-               color: Color.fromRGBO(18, 86, 143, 1), // Cor do texto do rótulo
+                controller: nomeController,
+                decoration: const InputDecoration(
+                  labelText: 'Nome da Disciplina',
+                  filled: false,
+                  labelStyle: TextStyle(
+                    color: Color.fromRGBO(18, 86, 143, 1), // Cor do texto do rótulo
                   ),
                 ),
-               style: const TextStyle(
-                color: Colors.black, // Cor do texto digitado
-                 ),
+                style: const TextStyle(
+                  color: Colors.black, // Cor do texto digitado
                 ),
+              ),
               TextField(
-               controller: descricaoController,
-               decoration: const InputDecoration(
-               labelText: 'Descrição',
-               filled: false,
-               labelStyle: TextStyle(
-               color: Color.fromRGBO(18, 86, 143, 1), // Cor do texto do rótulo
-               ),),
-               style: const TextStyle(
-                color: Colors.black, // Cor do texto digitado
+                controller: descricaoController,
+                decoration: const InputDecoration(
+                  labelText: 'Descrição',
+                  filled: false,
+                  labelStyle: TextStyle(
+                    color: Color.fromRGBO(18, 86, 143, 1), // Cor do texto do rótulo
+                  ),
+                ),
+                style: const TextStyle(
+                  color: Colors.black, // Cor do texto digitado
                 ),
               ),
             ],
           ),
-          actions: [  
+          actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Fecha o diálogo
               },
-               child: const Text(
-                  'Cancelar',
-                  style: TextStyle(
+              child: const Text(
+                'Cancelar',
+                style: TextStyle(
                   color: Color.fromRGBO(18, 86, 143, 1), // Cor de texto azul
-                 ),
                 ),
               ),
+            ),
             TextButton(
               onPressed: () async {
                 String? professorUid = FirebaseAuth.instance.currentUser?.uid; // Obtém o UID do professor
@@ -192,10 +194,10 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
               },
               child: const Text(
                 'Salvar',
-                  style: TextStyle(
+                style: TextStyle(
                   color: Color.fromRGBO(18, 86, 143, 1), // Cor de texto azul
-                 ),
                 ),
+              ),
             ),
           ],
         );
@@ -218,10 +220,10 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
               },
               child: const Text(
                 'Cancelar',
-                  style: TextStyle(
+                style: TextStyle(
                   color: Color.fromRGBO(18, 86, 143, 1), // Cor de texto azul
-                 ),
                 ),
+              ),
             ),
             TextButton(
               onPressed: () async {
@@ -238,10 +240,10 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
               },
               child: const Text(
                 'Excluir',
-                  style: TextStyle(
+                style: TextStyle(
                   color: Color.fromRGBO(18, 86, 143, 1), // Cor de texto azul
-                 ),
                 ),
+              ),
             ),
           ],
         );
@@ -256,19 +258,9 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
         automaticallyImplyLeading: false,
         title: Row(
           children: [
-            CircleAvatar(
-              backgroundImage: profileImageUrl != null && profileImageUrl!.isNotEmpty
-                  ? NetworkImage(profileImageUrl!)
-                  : null,
-              backgroundColor: profileImageUrl == null || profileImageUrl!.isEmpty
-                  ? const Color.fromRGBO(18, 86, 143, 1)
-                  : Colors.transparent,
-              child: profileImageUrl == null || profileImageUrl!.isEmpty
-                  ? Text(
-                      _teacherName?.substring(0, 1).toUpperCase() ?? '',
-                      style: const TextStyle(fontSize: 20, color: Colors.white),
-                    )
-                  : null,
+            CustomAvatar(
+              profileImageUrl: profileImageUrl,
+              teacherName: _teacherName,
             ),
             const SizedBox(width: 10),
             Text(_teacherName ?? 'Carregando...'),
@@ -306,15 +298,15 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
                   ),
                   if (_disciplinas.isEmpty)
                     Center( // Centraliza o texto
-                    child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Text(
-                       'Nenhuma disciplina cadastrada. Clique em Adicionar para cadastrar nova disciplina.',
-                        style: TextStyle(color: Colors.grey.shade600),
-                        textAlign: TextAlign.center, // Alinha o texto ao centro
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Text(
+                          'Nenhuma disciplina cadastrada. Clique em Adicionar para cadastrar nova disciplina.',
+                          style: TextStyle(color: Colors.grey.shade600),
+                          textAlign: TextAlign.center, // Alinha o texto ao centro
+                        ),
                       ),
-                    ),
-                  )
+                    )
                   else
                     ListView.builder(
                       shrinkWrap: true, // Permite que o ListView tenha um tamanho fixo
@@ -325,45 +317,45 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
                         return Card(
                           margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                           child: GestureDetector(
-                          onTap: () {
-                            // Adicionar lógica de abrir disciplina específica.
-                            print('Disciplina clicada: ${disciplina['nome']}');
-                          },
-                          child: Container(
-                          padding: const EdgeInsets.all(10.0), 
-                          child: ListTile(
-                            title: Text(disciplina['nome']),
-                            subtitle: Text(disciplina['descricao']),
-                            trailing: PopupMenuButton<String>(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.0), // Adiciona border radius
+                            onTap: () {
+                              // Adicionar lógica de abrir disciplina específica.
+                              print('Disciplina clicada: ${disciplina['nome']}');
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(10.0),
+                              child: ListTile(
+                                title: Text(disciplina['nome']),
+                                subtitle: Text(disciplina['descricao']),
+                                trailing: PopupMenuButton<String>(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8.0), // Adiciona border radius
+                                  ),
+                                  onSelected: (value) {
+                                    if (value == 'edit') {
+                                      _showEditDisciplinaDialog(disciplina['id'], disciplina['nome'], disciplina['descricao']); // Passa os dados para editar
+                                    } else if (value == 'delete') {
+                                      _showDeleteConfirmationDialog(disciplina['id']); // Chama o método para excluir disciplina
+                                    } // Implemtar a lógica de enviar convite
+                                  },
+                                  itemBuilder: (BuildContext context) {
+                                    return [
+                                      const PopupMenuItem<String>(
+                                        value: 'edit',
+                                        child: Text('Editar'),
+                                      ),
+                                      const PopupMenuItem<String>(
+                                        value: 'delete',
+                                        child: Text('Excluir'),
+                                      ),
+                                      const PopupMenuItem<String>(
+                                        value: 'enviar',
+                                        child: Text('Enviar Convite'),
+                                      ),
+                                    ];
+                                  },
+                                ),
                               ),
-                              onSelected: (value) {
-                                if (value == 'edit') {
-                                  _showEditDisciplinaDialog(disciplina['id'], disciplina['nome'], disciplina['descricao']); // Passa os dados para editar
-                                } else if (value == 'delete') {
-                                  _showDeleteConfirmationDialog(disciplina['id']); // Chama o método para excluir disciplina
-                                } // Implemtar a lógica de enviar convite
-                              },
-                              itemBuilder: (BuildContext context) {
-                                return [
-                                  const PopupMenuItem<String>(
-                                    value: 'edit',
-                                    child: Text('Editar'),
-                                  ),
-                                  const PopupMenuItem<String>(
-                                    value: 'delete',
-                                    child: Text('Excluir'),
-                                  ),
-                                  const PopupMenuItem<String>(
-                                    value: 'enviar',
-                                    child: Text('Enviar Convite'),
-                                  ),
-                                ];
-                              },
                             ),
-                          ),
-                          ),
                           ),
                         );
                       },
