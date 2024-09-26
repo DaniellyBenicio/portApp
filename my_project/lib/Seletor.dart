@@ -13,13 +13,13 @@ class Seletor extends StatelessWidget {
       body: const SingleChildScrollView(
         child: UserSelectionBody(),
       ),
-      bottomNavigationBar: BottomAppBar(
-        color: const Color.fromRGBO(18, 86, 143, 1),
+      bottomNavigationBar: const BottomAppBar(
+        color: Color.fromRGBO(18, 86, 143, 1),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.all(16.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: const [
+            children: [
               Text(
                 '© 2024 PortApp',
                 style: TextStyle(color: Colors.white),
