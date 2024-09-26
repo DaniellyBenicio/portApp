@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../menu.dart';
+import '../../menu.dart';
 import 'page_helpers.dart';
-import '../settings_page.dart';
+import '../../settings_page.dart';
 
 class HomePage extends StatefulWidget {
   final String userType; //Tipo de usuário

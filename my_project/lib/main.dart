@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart'; //integra firebase
 import 'firebase_options.dart';
 import 'Seletor.dart'; 
-import './pages/home_page.dart';
+import 'pages/Home/home_page.dart';
 import 'Settings_Page.dart'; 
 import 'EditProfilePage.dart';
 import 'ChangePasswordPage.dart';

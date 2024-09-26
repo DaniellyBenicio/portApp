@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../student_pages.dart';
-import '../teacher_pages.dart';
-import '../settings_page.dart';
-import '../disciplinesPage.dart';
-import '../AlunoDisciplinesPage.dart';
+import '../../student_pages.dart';
+import '../../teacher_pages.dart';
+import '../../settings_page.dart';
+import '../../disciplinesPage.dart';
+import '../../AlunoDisciplinesPage.dart';
 
 const String userTypeAluno = 'Aluno';
 const String userTypeProfessor = 'Professor';

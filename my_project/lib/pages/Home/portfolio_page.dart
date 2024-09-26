@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../iconsPortfolio.dart';
+import '../../iconsPortfolio.dart';
 
 class PortfolioPage extends StatelessWidget {
   const PortfolioPage({super.key});
