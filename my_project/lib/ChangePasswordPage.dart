@@ -81,20 +81,20 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
   }
 
   Future<void> _navigateToLogin() async {
-  final prefs = await SharedPreferences.getInstance();
-  final userType = prefs.getString('user_type') ?? 'Aluno';
+    final prefs = await SharedPreferences.getInstance();
+    final userType = prefs.getString('user_type') ?? 'Aluno';
 
-  print('Tipo de usuário armazenado: $userType'); //Testando se deu certo
+    print('Tipo de usuário armazenado: $userType'); //Testando se deu certo
 
-  if (userType == 'Professor') {
-    Navigator.pushReplacementNamed(context, '/homeProfessor'); //Rota se professor
-  } else if (userType == 'Aluno') {
-    Navigator.pushReplacementNamed(context, '/homeAluno'); //Rota se aluno
-  } else {
-    print('Tipo de usuário inválido: $userType');
-    // Opcional: Navegue para uma página de erro ou mostre um alerta
+    if (userType == 'Professor') {
+      Navigator.pushReplacementNamed(context, '/homeProfessor'); //Rota se professor
+    } else if (userType == 'Aluno') {
+      Navigator.pushReplacementNamed(context, '/homeAluno'); //Rota se aluno
+    } else {
+      print('Tipo de usuário inválido: $userType');
+      // Opcional: Navegue para uma página de erro ou mostre um alerta
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -143,6 +143,15 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
             ElevatedButton(
               onPressed: _changePassword,
               child: const Text('Salvar'),
+              style: ElevatedButton.styleFrom(
+
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                elevation: 5,
+                shadowColor: Colors.black.withOpacity(0.5), // Cor da sombra
+              ),
             ),
           ],
         ),
@@ -161,6 +170,20 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       obscureText: obscureText,
       decoration: InputDecoration(
         labelText: labelText,
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.blue),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         errorText: _errorMessage.isEmpty ? null : _errorMessage,
         suffixIcon: IconButton(
           icon: Icon(
