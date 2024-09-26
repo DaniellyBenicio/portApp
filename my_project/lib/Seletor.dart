@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'Login.dart';
+import './pages/Login/Login.dart';
 
 class Seletor extends StatelessWidget {
   const Seletor({super.key}); // Construtor da classe 
