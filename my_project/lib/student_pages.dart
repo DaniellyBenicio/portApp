@@ -12,7 +12,7 @@ class StudentPortfolioPage extends StatefulWidget {
 class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
   final FirestoreService _firestoreService = FirestoreService();
   String? _studentName;
-  String? profileImageUrl = 'https://example.com/default-profile.png'; // URL da imagem de perfil padrão
+  String? profileImageUrl;
   bool _isLoading = true; // Variável para controle de loading
   String? selectedDiscipline;
   DateTime? selectedDate;
@@ -30,10 +30,14 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
         String email = user.email ?? "";
         Map<String, String>? userData = await _firestoreService.getNomeAndImageByEmail(email);
         if (userData != null) {
-          String firstName = userData['nome']?.split(' ')[0] ?? 'Estudante';
+          String fullName =  userData['nome'] ?? 'Aluno';
+          List<String> nameParts = fullName.split(' ');
+          String firstName = nameParts.length >= 2
+              ? '${nameParts[0]} ${nameParts[1]}'
+              : nameParts[0];
           setState(() {
             _studentName = firstName;
-            profileImageUrl = userData['profileImageUrl'] ?? profileImageUrl;
+            profileImageUrl = userData['profileImageUrl'] ?? '';
             _isLoading = false; // Dados carregados
           });
         } else {
@@ -47,7 +51,6 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
       setState(() {
         _isLoading = false; // Encerrar o loading mesmo em caso de erro
       });
-      print('Erro ao buscar dados do aluno: $e');
     }
   }
 
@@ -73,7 +76,18 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
         title: Row(
           children: [
             CircleAvatar(
-              backgroundImage: NetworkImage(profileImageUrl!),
+              backgroundImage: profileImageUrl != null && profileImageUrl!.isNotEmpty
+                  ? NetworkImage(profileImageUrl!)
+                  : null,
+              backgroundColor: profileImageUrl == null || profileImageUrl!.isEmpty
+                  ? const Color.fromRGBO(18, 86, 143, 1)
+                  : Colors.transparent,
+              child: profileImageUrl == null || profileImageUrl!.isEmpty
+                ? Text(
+                  _studentName?.substring(0, 1).toUpperCase() ?? '',
+                  style: const TextStyle(fontSize: 20, color: Colors.white),
+                )
+              : null,
             ),
             const SizedBox(width: 10),
             Text(_studentName ?? 'Carregando...'),
