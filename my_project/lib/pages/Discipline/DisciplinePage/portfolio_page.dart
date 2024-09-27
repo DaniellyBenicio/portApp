@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:my_project/services/portfolio_service.dart';
 
 class PortfolioPage extends StatefulWidget {
-  final String disciplinaId; // Espera-se que seja o ID da disciplina
+  final String disciplinaId; 
+  final String disciplinaNome;
 
-  const PortfolioPage({Key? key, required this.disciplinaId}) : super(key: key);
+  const PortfolioPage({Key? key, required this.disciplinaId, required this.disciplinaNome}) : super(key: key);
 
   @override
   _PortfolioPageState createState() => _PortfolioPageState();
@@ -15,6 +17,8 @@ class _PortfolioPageState extends State<PortfolioPage> {
   final _formKey = GlobalKey<FormState>();
   final _tituloController = TextEditingController();
   final _descricaoController = TextEditingController();
+  final PortfolioService _portfolioService = PortfolioService(); 
+  bool _isLoading = false;
 
   void _showAddPortfolioDialog() {
     showDialog(
@@ -52,18 +56,20 @@ class _PortfolioPageState extends State<PortfolioPage> {
           ),
           actions: [
             TextButton(
-              onPressed: () async {
+              onPressed: _isLoading ? null : () async {
                 if (_formKey.currentState!.validate()) {
                   await _addPortfolio();
                 }
               },
-              child: const Text('Salvar'),
+              child: _isLoading 
+                ? CircularProgressIndicator() 
+                : const Text('Salvar'),
             ),
             TextButton(
               onPressed: () {
-                _tituloController.clear(); // Limpa os campos
-                _descricaoController.clear(); // Limpa os campos
-                Navigator.of(context).pop(); // Fecha o diálogo sem salvar
+                _tituloController.clear(); 
+                _descricaoController.clear(); 
+                Navigator.of(context).pop(); 
               },
               child: const Text('Cancelar'),
             ),
@@ -74,13 +80,17 @@ class _PortfolioPageState extends State<PortfolioPage> {
   }
 
   Future<void> _addPortfolio() async {
+    setState(() {
+      _isLoading = true; 
+    });
+
     User? user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
       // Verifica se a disciplina existe pelo ID
       DocumentSnapshot disciplinaSnapshot = await FirebaseFirestore.instance
           .collection('Disciplinas')
-          .doc(widget.disciplinaId) // Busca diretamente pelo ID da disciplina
+          .doc(widget.disciplinaId)
           .get();
 
       if (!disciplinaSnapshot.exists) {
@@ -88,25 +98,23 @@ class _PortfolioPageState extends State<PortfolioPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Disciplina não encontrada.')),
         );
+        setState(() {
+          _isLoading = false; 
+        });
         return;
       }
 
-      // Referência para o Firestore
-      final portfolioRef = FirebaseFirestore.instance
-          .collection('Disciplinas')
-          .doc(widget.disciplinaId) // ID da disciplina encontrado
-          .collection('Portfolios')
-          .doc(); // Gera um novo ID automaticamente
-
-      // Salvar no Firestore
       try {
-        await portfolioRef.set({
-          'titulo': _tituloController.text,
-          'descricao': _descricaoController.text,
-          'professorUid': user.uid, // UID do professor
-          'disciplinaId': widget.disciplinaId, // ID da disciplina
-          'dataCriacao': FieldValue.serverTimestamp(),
-        });
+        await _portfolioService.adicionarPortfolio(
+          disciplinaId: widget.disciplinaId,
+          titulo: _tituloController.text,
+          descricao: _descricaoController.text,
+          professorUid: user.uid,
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Portfólio adicionado com sucesso!')),
+        );
 
         _tituloController.clear();
         _descricaoController.clear();
@@ -121,13 +129,17 @@ class _PortfolioPageState extends State<PortfolioPage> {
         const SnackBar(content: Text('Você precisa estar logado para adicionar um portfólio.')),
       );
     }
+
+    setState(() {
+      _isLoading = false; 
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Portfólio - ${widget.disciplinaId}'),
+        title: Text('Portfólio - ${widget.disciplinaNome}'), 
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -136,6 +148,48 @@ class _PortfolioPageState extends State<PortfolioPage> {
             ElevatedButton(
               onPressed: _showAddPortfolioDialog,
               child: const Text('Adicionar'),
+            ),
+            const SizedBox(height: 16.0),
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('Disciplinas')
+                    .doc(widget.disciplinaId)
+                    .collection('Portfolios')
+                    .orderBy('dataCriacao', descending: true)
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.hasError) {
+                    return Center(child: Text('Erro: ${snapshot.error}'));
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                    return const Center(child: Text('Nenhum portfólio encontrado.'));
+                  }
+
+                  final portfolios = snapshot.data!.docs;
+
+                  return ListView.builder(
+                    itemCount: portfolios.length,
+                    itemBuilder: (context, index) {
+                      final portfolio = portfolios[index].data() as Map<String, dynamic>;
+
+                      return Card(
+                        margin: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: ListTile(
+                          title: Text(portfolio['titulo']),
+                          subtitle: Text(portfolio['descricao']),
+                          trailing: Text(portfolio['dataCriacao']?.toDate().toString() ?? ''),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ],
         ),

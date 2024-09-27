@@ -270,13 +270,16 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
             final disciplina = disciplinas[index];
             return GestureDetector(
               onTap: () {
-                // Navegar para a ActivitiesPage ao clicar na disciplina
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => PortfolioPage(disciplinaId: disciplina['id']),
+                    builder: (context) => PortfolioPage(
+                      disciplinaId: disciplina['id'],
+                      disciplinaNome: disciplina['nome'],
+                    ),
                   ),
                 );
+
               },
               child: Card(
                 margin: const EdgeInsets.symmetric(vertical: 8.0),
