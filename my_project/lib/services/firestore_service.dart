@@ -272,29 +272,4 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
     }
   }
 
-  // Método para adicionar uma atividade ou portfólio em uma disciplina
-  Future<void> adicionarAtividadeOuPortfolio({
-    required String disciplinaId,
-    required String titulo,
-    required String descricao,
-    required String professorUid,
-    required String tipoArquivo,
-    required bool isPortfolio,
-  }) async {
-    try {
-      final collectionName = isPortfolio ? 'Portfolios' : 'Atividades';
-      await _db.collection('Disciplinas')
-          .doc(disciplinaId)
-          .collection(collectionName)
-          .add({
-        'titulo': titulo,
-        'descricao': descricao,
-        'professorUid': professorUid,
-        'tipoArquivo': tipoArquivo,
-      });
-      print('Atividade/Portfólio adicionado com sucesso.');
-    } catch (e) {
-      print('Erro ao adicionar atividade/portfólio: $e');
-    }
-  }
 }

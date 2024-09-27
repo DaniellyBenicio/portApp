@@ -1,37 +1,40 @@
+/* portfolio_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'services/portfolio_service.dart'; 
 
 class PortfolioPage extends StatefulWidget {
   final String disciplinaId;
 
-  const PortfolioPage({super.key, required this.disciplinaId});//ID da disciplina associada ao portfólio
+  const PortfolioPage({super.key, required this.disciplinaId});
 
   @override
   _PortfolioPageState createState() => _PortfolioPageState();
 }
 
 class _PortfolioPageState extends State<PortfolioPage> {
-  List<Map<String, dynamic>> portfolios = []; //Lista para armazenar portfólios
-  String? usuarioUid; //UID do usuário atual
-  bool isProfessor = false; //Verifica se o usuário é um professor
+  List<Map<String, dynamic>> portfolios = [];
+  String? usuarioUid;
+  bool isProfessor = false;
+  DocumentSnapshot? lastDocument; // Para a paginação
+  bool isLoading = false; // Indicador de carregamento
 
   @override
   void initState() {
     super.initState();
-    _fetchPortfolios(); //Busca os portfólios na inicialização
-    _getUsuarioUid(); //Obtém o UID do usuário
+    _getUsuarioUid();
+    _fetchPortfolios();
   }
 
-  //Obtém o UID do usuário e verifica se é professor
   Future<void> _getUsuarioUid() async {
-    final user = FirebaseAuth.instance.currentUser; //Obtém o usuário atual
+    final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       setState(() {
-        usuarioUid = user.uid; //Armazena o UID
+        usuarioUid = user.uid;
       });
 
-      //Verifica o tipo de usuário no Firestore
       final snapshot = await FirebaseFirestore.instance
           .collection('Usuarios')
           .doc(user.uid)
@@ -39,47 +42,40 @@ class _PortfolioPageState extends State<PortfolioPage> {
 
       if (snapshot.exists && snapshot.data()?['tipoUsuario'] == 'professor') {
         setState(() {
-          isProfessor = true; //Atualiza a variável se for professor
+          isProfessor = true;
         });
       }
     }
   }
 
-  //Método para buscar os portfólios da disciplina
   Future<void> _fetchPortfolios() async {
-    try {
-      final snapshot = await FirebaseFirestore.instance
-          .collection('Disciplinas')
-          .doc(widget.disciplinaId)
-          .collection('Portfolios')
-          .get();
+    if (isLoading) return; // Evita múltiplas chamadas simultâneas
+    setState(() {
+      isLoading = true;
+    });
 
+    try {
+      final portfoliosData = await PortfolioService().getPortfolios(
+          widget.disciplinaId, lastDocument); // Chame o método correto do serviço
       setState(() {
-        portfolios = snapshot.docs.map((doc) {
-          return {
-            'id': doc.id,
-            'titulo': doc['titulo'],
-            'descricao': doc['descricao'],
-            'instrucoes': doc['instrucoes'],
-            'sugestoes': doc['sugestoes'] ?? [],
-            'professorUid': doc['professorUid'],
-          };
-        }).toList(); //Converte os documentos em uma lista de mapas
+        portfolios.addAll(portfoliosData);
+        lastDocument = portfoliosData.isNotEmpty ? portfoliosData.last['id'] : null; // Atualiza o lastDocument
       });
     } catch (e) {
-      print('Erro ao buscar portfólios: $e'); 
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erro ao buscar portfólios: $e')),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
-  //Método para adicionar um novo portfólio
   void _adicionarPortfolio() {
-    //Controladores de texto para os campos do diálogo
     final TextEditingController tituloController = TextEditingController();
     final TextEditingController descricaoController = TextEditingController();
-    final TextEditingController instrucoesController = TextEditingController();
-    final TextEditingController sugestaoController = TextEditingController();
 
-    //Exibe um diálogo para adicionar um portfólio
     showDialog(
       context: context,
       builder: (context) {
@@ -89,64 +85,32 @@ class _PortfolioPageState extends State<PortfolioPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(
-                  controller: tituloController,
-                  decoration: const InputDecoration(labelText: 'Título'),
-                ),
-                TextField(
-                  controller: descricaoController,
-                  decoration: const InputDecoration(labelText: 'Descrição'),
-                ),
-                TextField(
-                  controller: instrucoesController,
-                  decoration: const InputDecoration(labelText: 'Instruções para os alunos'),
-                  maxLines: 3,
-                ),
-                TextField(
-                  controller: sugestaoController,
-                  decoration: const InputDecoration(labelText: 'Sugestões de Tópicos'),
-                  maxLines: 3,
-                ),
+                TextField(controller: tituloController, decoration: const InputDecoration(labelText: 'Título')),
+                TextField(controller: descricaoController, decoration: const InputDecoration(labelText: 'Descrição')),
               ],
             ),
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); //Fecha o diálogo
-              },
-              child: const Text('Cancelar'),
-            ),
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
             TextButton(
               onPressed: () async {
-                //Valida se todos os campos estão preenchidos
-                if (tituloController.text.isEmpty ||
-                    descricaoController.text.isEmpty ||
-                    instrucoesController.text.isEmpty ||
-                    sugestaoController.text.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Todos os campos são obrigatórios!')),
-                  );
-                  return; //Retorna se algum campo estiver vazio
+                if (tituloController.text.isEmpty || descricaoController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Todos os campos são obrigatórios!')));
+                  return;
                 }
 
-                //Cria um novo portfólio no Firestore
-                final data = {
-                  'titulo': tituloController.text,
-                  'descricao': descricaoController.text,
-                  'instrucoes': instrucoesController.text,
-                  'sugestoes': [sugestaoController.text],
-                  'professorUid': usuarioUid,
-                };
-
-                await FirebaseFirestore.instance
-                    .collection('Disciplinas')
-                    .doc(widget.disciplinaId)
-                    .collection('Portfolios')
-                    .add(data);
-
-                Navigator.of(context).pop(); //Fecha o diálogo
-                _fetchPortfolios(); //Atualiza a lista de portfólios
+                try {
+                  await PortfolioService().adicionarPortfolio(
+                    disciplinaId: widget.disciplinaId,
+                    titulo: tituloController.text,
+                    descricao: descricaoController.text,
+                    professorUid: usuarioUid!,
+                  );
+                  Navigator.of(context).pop();
+                  _fetchPortfolios(); // Atualiza a lista de portfólios
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro ao adicionar portfólio: $e')));
+                }
               },
               child: const Text('Adicionar'),
             ),
@@ -156,63 +120,62 @@ class _PortfolioPageState extends State<PortfolioPage> {
     );
   }
 
+  Future<void> _detalhesPortfolio(String portfolioId) async {
+    // Obtenha os detalhes de um portfólio específico
+    try {
+      final portfolioDetails = await PortfolioService().getPortfolioDetails(widget.disciplinaId, portfolioId);
+      // Exiba os detalhes em um diálogo ou nova página
+      if (portfolioDetails != null) {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: Text(portfolioDetails['titulo']),
+              content: Text(portfolioDetails['descricao']),
+              actions: [
+                TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Fechar')),
+              ],
+            );
+          },
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro ao obter detalhes do portfólio: $e')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Portfólios'), 
-        centerTitle: true,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
-        children: portfolios.map((portfolio) { //Mapeia os portfólios para widgets
-          return Card(
-            elevation: 4,
-            margin: const EdgeInsets.symmetric(vertical: 8.0),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+      appBar: AppBar(title: const Text('Portfólios'), centerTitle: true),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(16.0),
+              children: portfolios.map((portfolio) {
+                return Card(
+                  elevation: 4,
+                  margin: const EdgeInsets.symmetric(vertical: 8.0),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  child: ListTile(
+                    title: Text(portfolio['titulo'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text(portfolio['descricao']),
+                    onTap: () => _detalhesPortfolio(portfolio['id']), // Ao tocar, mostra os detalhes
+                  ),
+                );
+              }).toList(),
             ),
-            child: ExpansionTile(
-              title: Text(portfolio['titulo'], style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text(portfolio['descricao']),
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    'Instruções: ${portfolio['instrucoes'] ?? 'Sem instruções fornecidas'}',
-                    style: const TextStyle(fontStyle: FontStyle.italic),
-                  ),
-                ),
-                if (portfolio['sugestoes'] != null && portfolio['sugestoes'].isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Sugestões de Atividades:', style: TextStyle(fontWeight: FontWeight.bold)),
-                        ...portfolio['sugestoes'].map<Widget>((sugestao) => Text('- $sugestao')).toList(),
-                      ],
-                    ),
-                  ),
-                if (!isProfessor) //Condicional para exibir o botão se não for professor
-                  TextButton.icon(
-                    onPressed: () {
-                    },
-                    icon: const Icon(Icons.add),
-                    label: const Text('Adicionar Atividade'),
-                  ),
-              ],
-            ),
-          );
-        }).toList(),
+          ),
+          if (isLoading) const CircularProgressIndicator(), // Indicador de carregamento
+          if (!isLoading) TextButton(onPressed: _fetchPortfolios, child: const Text('Carregar mais')) // Botão para carregar mais
+        ],
       ),
-      floatingActionButton: isProfessor //Exibe o FAB se for professor
-          ? FloatingActionButton(
-              onPressed: _adicionarPortfolio, //Chama o método para adicionar portfólio
-              tooltip: 'Adicionar Portfólio',
-              child: const Icon(Icons.add),
-            )
-          : null, //Não exibe o FAB se não for professor
+      floatingActionButton: isProfessor
+          ? FloatingActionButton(onPressed: _adicionarPortfolio, tooltip: 'Adicionar Portfólio', child: const Icon(Icons.add))
+          : null,
     );
   }
 }
+
+*/
