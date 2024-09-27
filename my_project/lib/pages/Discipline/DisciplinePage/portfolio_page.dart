@@ -62,7 +62,7 @@ class _PortfolioPageState extends State<PortfolioPage> {
                 }
               },
               child: _isLoading 
-                ? CircularProgressIndicator() 
+                ? const CircularProgressIndicator() 
                 : const Text('Salvar'),
             ),
             TextButton(
@@ -87,7 +87,6 @@ class _PortfolioPageState extends State<PortfolioPage> {
     User? user = FirebaseAuth.instance.currentUser;
 
     if (user != null) {
-      // Verifica se a disciplina existe pelo ID
       DocumentSnapshot disciplinaSnapshot = await FirebaseFirestore.instance
           .collection('Disciplinas')
           .doc(widget.disciplinaId)
@@ -147,9 +146,9 @@ class _PortfolioPageState extends State<PortfolioPage> {
           children: [
             ElevatedButton(
               onPressed: _showAddPortfolioDialog,
-              child: const Text('Adicionar'),
+              child: const Text('Adicionar Portfólio'),
             ),
-            const SizedBox(height: 16.0),
+            const SizedBox(height: 16),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream: FirebaseFirestore.instance
@@ -163,30 +162,27 @@ class _PortfolioPageState extends State<PortfolioPage> {
                     return const Center(child: CircularProgressIndicator());
                   }
 
-                  if (snapshot.hasError) {
-                    return Center(child: Text('Erro: ${snapshot.error}'));
-                  }
-
                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                     return const Center(child: Text('Nenhum portfólio encontrado.'));
                   }
 
-                  final portfolios = snapshot.data!.docs;
+                  return ListView(
+                    children: snapshot.data!.docs.map((doc) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      final DateTime? dataCriacao = (data['dataCriacao'] as Timestamp?)?.toDate();
 
-                  return ListView.builder(
-                    itemCount: portfolios.length,
-                    itemBuilder: (context, index) {
-                      final portfolio = portfolios[index].data() as Map<String, dynamic>;
-
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: ListTile(
-                          title: Text(portfolio['titulo']),
-                          subtitle: Text(portfolio['descricao']),
-                          trailing: Text(portfolio['dataCriacao']?.toDate().toString() ?? ''),
+                      return ListTile(
+                        title: Text(data['titulo']),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(data['descricao']),
+                            if (dataCriacao != null) 
+                              Text('Criado em: ${dataCriacao.toLocal().toString().split(' ')[0]}'), // Formate a data conforme necessário
+                          ],
                         ),
                       );
-                    },
+                    }).toList(),
                   );
                 },
               ),
