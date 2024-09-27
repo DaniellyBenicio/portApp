@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AboutUsPage extends StatelessWidget {
   const AboutUsPage({super.key});
@@ -26,9 +27,7 @@ class AboutUsPage extends StatelessWidget {
                   fontSize: 28, //Define o tamanho da fonte
                   fontWeight: FontWeight.bold, //Define a fonte como negrito
                   color: Colors.blue, //Define a cor do texto
-                  shadows: [
-               
-                  ],
+                  shadows: [],
                 ),
               ),
             ),
@@ -53,9 +52,7 @@ class AboutUsPage extends StatelessWidget {
                   fontSize: 24, 
                   fontWeight: FontWeight.bold, 
                   color: Colors.blue, 
-                  shadows: [
-                  
-                  ],
+                  shadows: [],
                 ),
               ),
             ),
@@ -80,9 +77,7 @@ class AboutUsPage extends StatelessWidget {
                   fontSize: 20, 
                   fontWeight: FontWeight.bold, 
                   color: Colors.blue, 
-                  shadows: [
-                    
-                  ],
+                  shadows: [],
                 ),
               ),
             ),
@@ -120,11 +115,11 @@ class AboutUsPage extends StatelessWidget {
   //Cria a lista de membros da equipe de desenvolvimento
   Widget _buildTeamMembers() {
     final teamMembers = [
-      'José Olinda',
-      'Danielly Benício',
-      'Daniel Teixeira',
-      'Amanda Souza',
-      'Luan Fernandes'
+      {'name': 'José Olinda', 'github': 'https://github.com/joseolinda'},
+      {'name': 'Danielly Benício', 'github': 'https://github.com/daniellybenicio'},
+      {'name': 'Daniel Teixeira', 'github': 'https://github.com/DanielTeixeira23'},
+      {'name': 'Amanda Souza', 'github': 'https://github.com/asvsz'},
+      {'name': 'Luan Fernandes', 'github': 'https://github.com/LuanF11'},
     ]; 
 
     return Column(
@@ -132,30 +127,43 @@ class AboutUsPage extends StatelessWidget {
       children: teamMembers.map((member) { 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 4.0), 
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 4.0,
-                  offset: Offset(2.0, 2.0),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min, 
-                children: [
-                  const Icon(Icons.person, color: Colors.blue, size: 20), 
-                  const SizedBox(width: 10), 
-                  Text(
-                    member, // Exibe o nome do membro da equipe.
-                    style: const TextStyle(fontSize: 16), 
+          child: GestureDetector(
+            onTap: () async {
+              final url = member['github'];
+              if (url != null) {
+                final uri = Uri.parse(url);
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri);
+                } else {
+                  throw 'Could not launch $url';
+                }
+              }
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 4.0,
+                    offset: Offset(2.0, 2.0),
                   ),
                 ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min, 
+                  children: [
+                    const Icon(Icons.person, color: Colors.blue, size: 20), 
+                    const SizedBox(width: 10), 
+                    Text(
+                      member['name']!, // Exibe o nome do membro da equipe.
+                      style: const TextStyle(fontSize: 16), 
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
