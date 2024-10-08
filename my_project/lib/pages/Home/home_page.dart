@@ -41,14 +41,6 @@ class _HomePageState extends State<HomePage> {
         automaticallyImplyLeading: false,
         backgroundColor: const Color.fromRGBO(18, 86, 143, 1),
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          tooltip: 'Voltar',
-          color: Colors.white,
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.notifications),
