@@ -14,13 +14,16 @@ class DisciplinesPage extends StatefulWidget {
 class _DisciplinesPageState extends State<DisciplinesPage> {
   final FirestoreService _firestoreService = FirestoreService(); // Instância do serviço Firestore.
   List<Map<String, dynamic>> disciplinas = []; // Lista para armazenar as disciplinas.
+  List<Map<String, dynamic>> disciplinasFiltradas = []; // Lista para armazenar as disciplinas filtradas.
   String? professorUid; // UID do professor autenticado.
+  TextEditingController searchController = TextEditingController(); // Controlador para o campo de pesquisa.
 
   @override
   void initState() {
     super.initState();
     _getCurrentUserUid(); // Busca o UID do professor ao iniciar.
     _fetchDisciplinas(); // Carrega as disciplinas do professor.
+    searchController.addListener(_filterDisciplinas); // Adiciona listener para o campo de pesquisa.
   }
 
   void _getCurrentUserUid() {
@@ -50,10 +53,21 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
             ...doc.data() as Map<String, dynamic>, // Extrai dados do documento
           };
         }).toList();
+        disciplinasFiltradas = disciplinas; // Inicializa a lista filtrada com todas as disciplinas.
       });
     } catch (e) {
       print('Erro ao buscar disciplinas: $e');
     }
+  }
+
+  void _filterDisciplinas() {
+    String query = searchController.text.toLowerCase();
+    setState(() {
+      disciplinasFiltradas = disciplinas.where((disciplina) {
+        return disciplina['nome'].toLowerCase().contains(query) ||
+               disciplina['descricao'].toLowerCase().contains(query);
+      }).toList();
+    });
   }
 
   void _criarDisciplina() {
@@ -113,6 +127,7 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
                       'descricao': descricaoController.text,
                       'codigoAcesso': codigoAcesso,
                     });
+                    _filterDisciplinas(); // Atualiza a lista filtrada.
                   });
                   // Exibe um diálogo com o código de acesso da nova disciplina
                   showDialog(
@@ -261,13 +276,27 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
             height: 1.0,
           ),
         ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48.0),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: searchController,
+              decoration: const InputDecoration(
+                hintText: 'Pesquisar Disciplinas...',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.search),
+              ),
+            ),
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: ListView.builder(
-          itemCount: disciplinas.length,
+          itemCount: disciplinasFiltradas.length,
           itemBuilder: (context, index) {
-            final disciplina = disciplinas[index];
+            final disciplina = disciplinasFiltradas[index];
             return GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -279,7 +308,6 @@ class _DisciplinesPageState extends State<DisciplinesPage> {
                     ),
                   ),
                 );
-
               },
               child: Card(
                 margin: const EdgeInsets.symmetric(vertical: 8.0),
