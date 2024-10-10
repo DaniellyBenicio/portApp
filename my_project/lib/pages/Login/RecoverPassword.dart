@@ -1,26 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+// Definindo constantes para estilos de texto
+const TextStyle headerTextStyle = TextStyle(
+  fontSize: 24,
+  fontWeight: FontWeight.bold,
+  color: Color.fromRGBO(18, 86, 143, 1),
+);
+
+const TextStyle subHeaderTextStyle = TextStyle(
+  fontSize: 16,
+  color: Colors.black,
+);
+
+const TextStyle labelTextStyle = TextStyle(
+  fontSize: 16,
+  color: Colors.black,
+);
+
+const TextStyle buttonTextStyle = TextStyle(
+  color: Colors.white,
+);
+
+// Definindo constantes para cores
+const Color primaryColor = Color.fromRGBO(18, 86, 143, 1);
+const Color fillColor = Color(0xFFE0E0E0); // Cor de preenchimento para o TextFormField
+
 class RecoverPassword extends StatefulWidget {
   @override
   _RecoverPasswordState createState() => _RecoverPasswordState();
 }
 
 class _RecoverPasswordState extends State<RecoverPassword> {
-  final _emailController = TextEditingController(); //Controlador para o campo de e-mail
-  final _formKey = GlobalKey<FormState>(); //Chave para o formulário
-  bool _loading = false; //Indicador de carregamento
+  final _emailController = TextEditingController(); // Controlador para o campo de e-mail
+  final _formKey = GlobalKey<FormState>(); // Chave para o formulário
+  bool _loading = false; // Indicador de carregamento
 
-  //Método para enviar o e-mail de recuperação de senha
+  // Método para enviar o e-mail de recuperação de senha
   Future<void> _resetPassword() async {
-    if (_formKey.currentState!.validate()) {//Valida o formulário
+    if (_formKey.currentState!.validate()) { // Valida o formulário
       setState(() {
-        _loading = true;//Ativa o indicador de carregamento
+        _loading = true; // Ativa o indicador de carregamento
       });
 
       try {
         await FirebaseAuth.instance.sendPasswordResetEmail(
-          email: _emailController.text.trim(),//Envia o e-mail para recuperação
+          email: _emailController.text.trim(), // Envia o e-mail para recuperação
         );
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -57,7 +82,7 @@ class _RecoverPasswordState extends State<RecoverPassword> {
             Navigator.pop(context); // Navega de volta
           },
         ),
-        backgroundColor: const Color.fromRGBO(18, 86, 143, 1)
+        backgroundColor: primaryColor,
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -70,20 +95,13 @@ class _RecoverPasswordState extends State<RecoverPassword> {
               children: [
                 const Text(
                   'Recuperação de Senha',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromRGBO(18, 86, 143, 1), 
-                  ),
+                  style: headerTextStyle,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 const Text(
                   'Digite seu endereço de e-mail para receber um link para redefinir sua senha.',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.black,
-                  ),
+                  style: subHeaderTextStyle,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
@@ -94,7 +112,7 @@ class _RecoverPasswordState extends State<RecoverPassword> {
                     children: [
                       const Text(
                         'Email',
-                        style: TextStyle(fontSize: 16, color: Colors.black),
+                        style: labelTextStyle,
                       ),
                       const SizedBox(height: 8),
                       // Ajuste o width do TextFormField
@@ -104,22 +122,22 @@ class _RecoverPasswordState extends State<RecoverPassword> {
                           controller: _emailController,
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: Colors.grey[200],
+                            fillColor: fillColor,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(color: Color.fromRGBO(18, 86, 143, 1),),
+                              borderSide: const BorderSide(color: primaryColor),
                             ),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Por favor, insira o seu e-mail'; //Validação para campo vazio
+                              return 'Por favor, insira o seu e-mail'; // Validação para campo vazio
                             } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-                              return 'Por favor, insira um e-mail válido'; //Validação de formato
+                              return 'Por favor, insira um e-mail válido'; // Validação de formato
                             }
-                            return null; //Se válido
+                            return null; // Se válido
                           },
                         ),
                       ),
@@ -127,9 +145,9 @@ class _RecoverPasswordState extends State<RecoverPassword> {
                       _loading
                           ? const Center(child: CircularProgressIndicator())
                           : ElevatedButton(
-                              onPressed: _resetPassword, //Chama o método de reset
+                              onPressed: _resetPassword, // Chama o método de reset
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color.fromRGBO(18, 86, 143, 1),
+                                backgroundColor: primaryColor,
                                 padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
@@ -137,7 +155,7 @@ class _RecoverPasswordState extends State<RecoverPassword> {
                               ),
                               child: const Text(
                                 'Enviar link de recuperação',
-                                style: TextStyle(color: Colors.white),
+                                style: buttonTextStyle,
                               ),
                             ),
                     ],
