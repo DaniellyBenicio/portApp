@@ -272,4 +272,6 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
     }
   }
 
+  
+
 }
