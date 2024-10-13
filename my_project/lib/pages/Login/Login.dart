@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // Importa o Firebase Auth
-import 'package:shared_preferences/shared_preferences.dart'; 
+import 'package:cloud_firestore/cloud_firestore.dart'; 
 import 'RecoverPassword.dart'; 
 import 'Register.dart';
 import 'package:flutter/gestures.dart';
@@ -8,27 +8,29 @@ import 'package:flutter/gestures.dart';
 //Define a classe Login que é um StatefulWidget para permitir gerenciamento de estado
 
 class Login extends StatefulWidget {
-  final String userType; //Tipo de usuário passado como parâmetro 
+  final String userType; // Tipo de usuário passado como parâmetro 
 
   const Login({super.key, required this.userType});
 
   @override
   // ignore: library_private_types_in_public_api
-  _LoginState createState() => _LoginState(); //Cria o estado do Login
+  _LoginState createState() => _LoginState(); // Cria o estado do Login
 }
 
 class _LoginState extends State<Login> {
-  final TextEditingController _emailController = TextEditingController(); //Controla o campo de email
-  final TextEditingController _passwordController = TextEditingController(); //Controla o campo de senha
-  bool _isLoading = false; //Gerencia o estado de carregamento
-  bool _obscurePassword = true; //Gerencia a visibilidade da senha
+  final TextEditingController _emailController = TextEditingController(); // Controla o campo de email
+  final TextEditingController _passwordController = TextEditingController(); // Controla o campo de senha
+  bool _isLoading = false; // Gerencia o estado de carregamento
+  bool _obscurePassword = true; // Gerencia a visibilidade da senha
 
-  //Função assíncrona para fazer login
+  // Adiciona a instância do Firestore
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  // Função assíncrona para fazer login
   Future<void> _login() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
-    //Verifica preenchimento dos campos
     if (email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Por favor, preencha todos os campos.')),
@@ -37,34 +39,48 @@ class _LoginState extends State<Login> {
     }
 
     setState(() {
-      _isLoading = true; //Ativa o indicador de carregamento
+      _isLoading = true;
     });
 
     try {
-      //ignore: unused_local_variable
-      //Tenta fazer o login com o Firebase Authentication
+      // Autentica o usuário
       UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Salva o tipo de usuário no SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('user_type', widget.userType);
+      // Obtém os dados do usuário autenticado
+      final userSnapshot = await _db.collection('Usuarios').where('email', isEqualTo: email).get();
 
-      //Navega para a tela inicial após o login bem-sucedido
-      if (widget.userType == 'Professor') {
-        // ignore: use_build_context_synchronously
-        Navigator.pushReplacementNamed(context, '/homeProfessor');
-      } else if (widget.userType == 'Aluno') {
-        //ignore: use_build_context_synchronously
-        Navigator.pushReplacementNamed(context, '/homeAluno');
+      if (userSnapshot.docs.isNotEmpty) {
+        // Obtém os dados do primeiro usuário correspondente
+        final userData = userSnapshot.docs.first.data() as Map<String, dynamic>;
+        final userType = userData['tipo'];
+
+        // Verifica se o tipo de usuário corresponde ao que foi selecionado
+        if (userType != widget.userType) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Tem certeza que você é ${widget.userType}? Selecione o seu tipo corretamente para realizar o login!.')),
+          );
+          // Aqui você pode redirecionar para a aba correspondente, se desejar
+          Navigator.pop(context); // Fecha a tela de login
+          return; // Sai da função
+        }
+
+        // Navega para a tela inicial com base no tipo de usuário
+        if (userType == 'Professor') {
+          Navigator.pushReplacementNamed(context, '/homeProfessor');
+        } else if (userType == 'Aluno') {
+          Navigator.pushReplacementNamed(context, '/homeAluno');
+        } else {
+          print('Tipo de usuário inválido: $userType');
+        }
       } else {
-        //ignore: avoid_print
-        print('Tipo de usuário inválido: ${widget.userType}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Usuário não encontrado no banco de dados.')),
+        );
       }
     } on FirebaseAuthException catch (e) {
-      //Mensagens específicas para diferentes erros
       String message;
       if (e.code == 'user-not-found') {
         message = 'Nenhum usuário encontrado com esse e-mail.';
@@ -75,19 +91,16 @@ class _LoginState extends State<Login> {
       } else {
         message = 'Erro ao fazer login: ${e.message}';
       }
-      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
       );
     } catch (e) {
-      //Mensagem genérica para outros erros
-      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erro ao fazer login: ${e.toString()}')),
       );
     } finally {
       setState(() {
-        _isLoading = false; //Desativa o indicador de carregamento
+        _isLoading = false;
       });
     }
   }
