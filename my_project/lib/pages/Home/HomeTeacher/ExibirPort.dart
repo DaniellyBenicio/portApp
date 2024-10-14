@@ -88,7 +88,7 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
             const SizedBox(width: 10),
             Text(
               _teacherName ?? 'Carregando...',
-              style: TextStyle(color: Colors.black87),
+              style: TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.w500),
             ),
           ],
         ),
@@ -105,19 +105,19 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
                     Text(
                       'Portfólios',
                       style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     if (_disciplinas.isEmpty)
                       Center(
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Text(
                             'Nenhuma disciplina cadastrada.',
-                            style: TextStyle(color: Colors.grey[600]),
+                            style: TextStyle(color: Colors.grey[600], fontSize: 16),
                             textAlign: TextAlign.center,
                           ),
                         ),
@@ -132,15 +132,23 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
                           List<Map<String, dynamic>> portfolios = disciplina['portfolios'];
                           return Card(
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                             margin: const EdgeInsets.symmetric(vertical: 8.0),
-                            elevation: 2,
+                            elevation: 4,
                             child: Container(
-                              padding: const EdgeInsets.all(12.0),
+                              padding: const EdgeInsets.all(16.0),
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(8),
-                                color: Colors.grey[50],
+                                borderRadius: BorderRadius.circular(12),
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.2),
+                                    spreadRadius: 2,
+                                    blurRadius: 5,
+                                    offset: Offset(0, 3),
+                                  ),
+                                ],
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,7 +156,7 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
                                   Text(
                                     disciplina['nome'],
                                     style: const TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 20,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.black87,
                                     ),
@@ -160,7 +168,7 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
                                       padding: const EdgeInsets.only(top: 8.0),
                                       child: Text(
                                         'Nenhum portfólio cadastrado.',
-                                        style: TextStyle(color: Colors.grey[600]),
+                                        style: TextStyle(color: Colors.grey[600], fontSize: 16),
                                       ),
                                     )
                                   else
@@ -185,19 +193,20 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
                                         child: MouseRegion(
                                           cursor: SystemMouseCursors.click,
                                           child: Container(
-                                            padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+                                            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+                                            margin: const EdgeInsets.symmetric(vertical: 4.0),
                                             decoration: BoxDecoration(
-                                              color: Colors.grey[200], // Cor padrão
+                                              color: Colors.grey[100],
                                               borderRadius: BorderRadius.circular(8),
                                             ),
                                             child: Row(
                                               children: [
-                                                Icon(Icons.arrow_forward, color: Colors.grey[700]), // Ícone indicando que é clicável
-                                                const SizedBox(width: 4),
+                                                Icon(Icons.arrow_forward, color: Colors.grey[700]),
+                                                const SizedBox(width: 8),
                                                 Expanded(
                                                   child: Text(
                                                     portfolio['titulo'] ?? 'Nome do portfólio não disponível',
-                                                    style: TextStyle(color: Colors.grey[700]),
+                                                    style: TextStyle(color: Colors.grey[700], fontSize: 16),
                                                   ),
                                                 ),
                                               ],
