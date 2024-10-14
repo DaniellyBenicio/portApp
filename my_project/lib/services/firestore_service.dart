@@ -272,6 +272,95 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
     }
   }
 
+  Future<List<Map<String, dynamic>>> getPortfoliosPorDisciplina(String disciplinaId) async {
+    try {
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('Disciplinas')
+          .doc(disciplinaId)
+          .collection('Portfolios')
+          .get();
+
+      if (snapshot.docs.isEmpty) {
+        print('Nenhum portfólio encontrado para a disciplina: $disciplinaId');
+      }
+
+      return snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return {
+          ...data,
+          'id': doc.id, // Inclui o ID do documento, se necessário
+          'titulo': data['titulo'] ?? 'Título não disponível' // Atualizado para usar 'titulo'
+        };
+      }).toList();
+    } catch (e) {
+      print('Erro ao buscar portfólios: $e');
+      return [];
+    }
+  }
+
+  Future<void> excluirPortfolio({
+    required String disciplinaId,
+    required String portfolioId,
+  }) async {
+    try {
+      // Obtendo o portfólio para verificar se existe
+      final docSnapshot = await _db
+          .collection('Disciplinas')
+          .doc(disciplinaId)
+          .collection('Portfolios')
+          .doc(portfolioId)
+          .get();
+
+      if (docSnapshot.exists) {
+        // Exclui o portfólio
+        await _db
+            .collection('Disciplinas')
+            .doc(disciplinaId)
+            .collection('Portfolios')
+            .doc(portfolioId)
+            .delete();
+        print('Portfólio excluído com sucesso.');
+      } else {
+        print('Portfólio não encontrado. ID: $portfolioId');
+      }
+    } catch (e) {
+      print('Erro ao excluir portfólio: $e');
+    }
+  }
+
+  // Método para buscar portfólios associados ao aluno pelo seu ID
+  Future<List<String>> getPortfoliosByStudentId(String studentId) async {
+    List<String> portfolios = [];
+    
+    try {
+      // Buscar as matrículas do aluno
+      QuerySnapshot matriculasSnapshot = await _db
+          .collection('matriculas')
+          .where('idAluno', isEqualTo: studentId)
+          .get();
+
+      for (var matriculaDoc in matriculasSnapshot.docs) {
+        // Para cada matrícula, buscar as disciplinas
+        String disciplinaId = matriculaDoc['idDisciplina'];
+
+        // Buscar a subcoleção de portfólios na disciplina
+        QuerySnapshot portfoliosSnapshot = await _db
+            .collection('disciplinas')
+            .doc(disciplinaId)
+            .collection('portfolios')
+            .get();
+
+        // Adicionar os portfólios à lista
+        for (var portfolioDoc in portfoliosSnapshot.docs) {
+          portfolios.add(portfolioDoc['nome']); // Supondo que o campo que você quer é 'nome'
+        }
+      }
+    } catch (e) {
+      print('Erro ao buscar portfólios: $e'); // Tratar o erro conforme necessário
+    }
+
+    return portfolios;
+  }
+}
   
 
-}

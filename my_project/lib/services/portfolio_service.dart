@@ -113,4 +113,87 @@ Future<List<Map<String, dynamic>>> getPortfolios(String disciplinaId, DocumentSn
       throw Exception('Erro ao adicionar arquivo ao portfólio: $e');
     }
   }
+
+  Future<void> excluirPortfolio({
+    required String disciplinaId,
+    required String portfolioId,
+  }) async {
+    try {
+      // Verifica se o portfólio existe antes de tentar excluir
+      DocumentSnapshot docSnapshot = await _firestore
+          .collection('Disciplinas')
+          .doc(disciplinaId)
+          .collection('Portfolios')
+          .doc(portfolioId)
+          .get();
+
+      if (docSnapshot.exists) {
+        // Se o portfólio existir, realiza a exclusão
+        await _firestore
+            .collection('Disciplinas')
+            .doc(disciplinaId)
+            .collection('Portfolios')
+            .doc(portfolioId)
+            .delete();
+        print('Portfólio excluído com sucesso.');
+      } else {
+        throw Exception('Portfólio não encontrado.');
+      }
+    } catch (e) {
+      print('Erro ao excluir portfólio: $e');
+      throw Exception('Erro ao excluir portfólio: $e');
+    }
+  }
+
+  Future<void> editarPortfolio({
+    required String disciplinaId,
+    required String portfolioId,
+    required String titulo,
+    required String descricao,
+  }) async {
+    await _firestore
+        .collection('Disciplinas')
+        .doc(disciplinaId)
+        .collection('Portfolios')
+        .doc(portfolioId)
+        .update({
+      'titulo': titulo,
+      'descricao': descricao,
+      'dataAtualizacao': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getPortfoliosForStudent(String alunoUid) async {
+  // Primeiro, busque todas as matrículas do aluno
+  final matriculasSnapshot = await _firestore
+      .collection('Matriculas')
+      .where('alunoUid', isEqualTo: alunoUid)
+      .get();
+
+  // Obtenha todos os disciplinaIds
+  List<String> disciplinaIds = matriculasSnapshot.docs.map((doc) => doc['disciplinaId'] as String).toList();
+
+  List<Map<String, dynamic>> portfolios = [];
+
+  // Para cada disciplinaId, busque os portfólios
+  for (String disciplinaId in disciplinaIds) {
+    final portfoliosSnapshot = await _firestore
+        .collection('Disciplinas')
+        .doc(disciplinaId)
+        .collection('Portfolios')
+        .orderBy('dataCriacao', descending: true)
+        .get();
+
+    // Adicione os portfólios encontrados à lista
+    for (var doc in portfoliosSnapshot.docs) {
+      portfolios.add({
+        'id': doc.id,
+        ...doc.data()
+      });
+    }
+  }
+
+  return portfolios;
+}
+
 }
