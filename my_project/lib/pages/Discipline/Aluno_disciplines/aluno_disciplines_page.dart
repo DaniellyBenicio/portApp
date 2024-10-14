@@ -3,7 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import './services/firebase_service.dart';
 import './widgets/custom_snackbar.dart';
-import 'disciplina_detalhes_page.dart';
+import 'disciplina_detalhes_page.dart'; 
+import 'disciplineportpage.dart'; 
 
 class AlunoDisciplinesPage extends StatefulWidget {
   @override
@@ -256,7 +257,7 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => DisciplinaDetalhesPage(disciplina: disciplinas[index]),
+                                        builder: (context) => DisciplinePortPage(disciplinaId: disciplinas[index]['id']),
                                       ),
                                     );
                                   },

@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:my_project/services/portfolio_service.dart';
 import 'package:my_project/services/firestore_service.dart';
 import 'package:my_project/pages/Home/HomeStudent/widgets/custom_avatar.dart';
 
@@ -11,17 +14,44 @@ class StudentPortfolioPage extends StatefulWidget {
 }
 
 class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
-  final FirestoreService _firestoreService = FirestoreService();
+  final PortfolioService _portfolioService = PortfolioService();
+  final FirestoreService _firestoreService = FirestoreService(); 
   String? _studentName;
   String? profileImageUrl;
   bool _isLoading = true; // Variável para controle de loading
-  String? selectedDiscipline;
-  DateTime? selectedDate;
+  List<Map<String, dynamic>> _portfolios = []; // Lista para armazenar os portfólios do aluno
+  List<Map<String, dynamic>> _disciplinas = []; // Lista para armazenar as disciplinas
+  String? _selectedDisciplina; // Disciplina selecionada
 
   @override
   void initState() {
     super.initState();
-    _fetchStudentName();
+    _fetchStudentData();
+  }
+
+  Future<void> _fetchStudentData() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        String alunoUid = user.uid;
+
+        // Buscar o nome e a imagem do perfil do aluno
+        await _fetchStudentName();
+
+        // Buscar portfólios e disciplinas usando o ID do aluno
+        _portfolios = await _portfolioService.getPortfoliosForStudent(alunoUid);
+        _disciplinas = await _fetchStudentDisciplinas(alunoUid); // Novo método para buscar disciplinas
+
+        // Filtrar os portfólios pela disciplina selecionada após o carregamento inicial
+        _filterPortfoliosByDisciplina();
+      }
+    } catch (e) {
+      print('Erro ao carregar os dados do aluno: $e');
+    } finally {
+      setState(() {
+        _isLoading = false; // Encerrar o loading
+      });
+    }
   }
 
   Future<void> _fetchStudentName() async {
@@ -29,43 +59,64 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         String email = user.email ?? "";
-        Map<String, String>? userData = await _firestoreService.getNomeAndImageByEmail(email);
-        if (userData != null) {
+        Map<String, String>? userData = await _firestoreService.getNomeAndImageByEmail(email); 
+
+        if (userData != null && userData.isNotEmpty) {
           String fullName = userData['nome'] ?? 'Aluno';
           List<String> nameParts = fullName.split(' ');
           String firstName = nameParts.length >= 2
-              ? '${nameParts[0]} ${nameParts[1]}'
+              ? '${nameParts[1]} ${nameParts[2]}'
               : nameParts[0];
           setState(() {
             _studentName = firstName;
             profileImageUrl = userData['profileImageUrl'] ?? '';
-            _isLoading = false; // Dados carregados
           });
         } else {
           setState(() {
-            _isLoading = false; // Dados carregados, mas sem informações
+            _studentName = 'Aluno';
           });
         }
       }
     } catch (e) {
-      // Tratar erros de forma apropriada (ex.: exibir uma mensagem)
-      setState(() {
-        _isLoading = false; // Encerrar o loading mesmo em caso de erro
-      });
+      print('Erro ao carregar o nome do aluno: $e');
     }
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: selectedDate ?? DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2101),
-    );
-    if (picked != null && picked != selectedDate) {
+  Future<List<Map<String, dynamic>>> _fetchStudentDisciplinas(String alunoUid) async {
+    final matriculasSnapshot = await FirebaseFirestore.instance
+        .collection('Matriculas')
+        .where('alunoUid', isEqualTo: alunoUid)
+        .get();
+
+    // Obtenha todos os disciplinaIds
+    List<String> disciplinaIds = matriculasSnapshot.docs.map((doc) => doc['disciplinaId'] as String).toList();
+
+    // Busque informações das disciplinas
+    List<Map<String, dynamic>> disciplinas = [];
+    for (String disciplinaId in disciplinaIds) {
+      var disciplinaDoc = await FirebaseFirestore.instance.collection('Disciplinas').doc(disciplinaId).get();
+      if (disciplinaDoc.exists) {
+        disciplinas.add({
+          'id': disciplinaId,
+          'nome': disciplinaDoc['nome'] 
+        });
+      }
+    }
+
+    return disciplinas;
+  }
+
+  void _filterPortfoliosByDisciplina() {
+    // Se nenhuma disciplina estiver selecionada, mantenha todos os portfólios
+    if (_selectedDisciplina != null) {
       setState(() {
-        selectedDate = picked;
+        _portfolios = _portfolios.where((portfolio) {
+          return portfolio['disciplinaId'] == _selectedDisciplina; 
+        }).toList();
       });
+    } else {
+      // Se não houver disciplina selecionada, recarregue todos os portfólios
+      _fetchStudentData();
     }
   }
 
@@ -91,6 +142,30 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
             height: 1.0,
           ),
         ),
+        actions: [
+          // Barra azul para filtrar por disciplina
+          GestureDetector(
+            onTap: () {
+              _showDisciplinaDropdown(context);
+            },
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              color: const Color(0xFF007BFF), 
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Filtrar por disciplina',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  SizedBox(width: 8),
+                  Icon(Icons.arrow_drop_down, color: Colors.white),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -107,59 +182,45 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                // Filtros
-                SizedBox(
-                  width: double.infinity,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color.fromRGBO(18, 86, 143, 1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                    child: const Text(
-                      'Filtrar por',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 15),
-                _buildFilterRow(),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color.fromRGBO(18, 86, 143, 1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                    child: const Text(
-                      'Portfólios',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                if (_isLoading) // Exibir loading enquanto busca os dados
+
+                // Verificar se está carregando
+                if (_isLoading)
                   const Center(
                     child: CircularProgressIndicator(),
                   )
                 else
-                  const Center(
-                    child: Text(
-                      'Você ainda não possui portfólios',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
+                  _portfolios.isNotEmpty
+                      ? ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: _portfolios.length,
+                          itemBuilder: (context, index) {
+                            final portfolio = _portfolios[index];
+
+                            // Conversão do Timestamp para DateTime
+                            Timestamp timestamp = portfolio['dataCriacao'];
+                            DateTime date = timestamp.toDate();
+
+                            // Formatação da data
+                            String formattedDate = DateFormat('dd/MM/yyyy').format(date);
+
+                            return Card(
+                              child: ListTile(
+                                title: Text(portfolio['titulo'] ?? 'Sem título'),
+                                subtitle: Text('Data de criação: $formattedDate'),
+                              ),
+                            );
+                          },
+                        )
+                      : const Center(
+                          child: Text(
+                            'Você ainda não possui portfólios',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
               ],
             ),
           );
@@ -168,112 +229,41 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
     );
   }
 
-  Widget _buildFilterRow() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Seção de disciplina
-        Column(
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.book, color: Colors.black),
-                const SizedBox(width: 10),
-                const Text(
-                  'Disciplina:',
-                  style: TextStyle(fontSize: 16),
-                ),
-                const SizedBox(width: 20),
-                GestureDetector(
+  void _showDisciplinaDropdown(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Selecione uma disciplina'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: _disciplinas.map((disciplina) {
+                return ListTile(
+                  title: Text(disciplina['nome']),
                   onTap: () {
-                    // Abre o dropdown ao clicar no botão
-                    _showDisciplineDropdown();
+                    if (disciplina['id'] != _selectedDisciplina) {
+                      setState(() {
+                        _selectedDisciplina = disciplina['id'];
+                        // Filtrar os portfólios quando a disciplina mudar
+                        _filterPortfoliosByDisciplina(); 
+                      });
+                    }
+                    Navigator.of(context).pop(); // Fecha o dialog
                   },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(selectedDiscipline ?? 'Selecionar disciplina'),
-                        const Icon(Icons.arrow_drop_down),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+                );
+              }).toList(),
             ),
-            const SizedBox(height: 8),
-            // Opções de disciplinas (inicialmente ocultas)
-            if (selectedDiscipline != null)
-              Column(
-                children: ['Matemática', 'Português', 'Ciências']
-                    .map((discipline) => GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              selectedDiscipline = discipline;
-                            });
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                            margin: const EdgeInsets.only(top: 8),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200],
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.grey),
-                            ),
-                            child: Text(discipline),
-                          ),
-                        ))
-                    .toList(),
-              ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        // Seção de data
-        Row(
-          children: [
-            const Icon(Icons.calendar_today, color: Colors.black),
-            const SizedBox(width: 8),
-            const Text(
-              'Data:',
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(width: 60),
-            GestureDetector(
-              onTap: () => _selectDate(context),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 33),
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(selectedDate != null
-                        ? '${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}'
-                        : 'Selecionar data'),
-                    const Icon(Icons.arrow_drop_down),
-                  ],
-                ),
-              ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop(); 
+              },
             ),
           ],
-        ),
-      ],
+        );
+      },
     );
-  }
-
-  void _showDisciplineDropdown() {
-    setState(() {
-      // Inicia a seleção da disciplina
-      selectedDiscipline = null; // Reseta a seleção ao abrir
-    });
   }
 }
