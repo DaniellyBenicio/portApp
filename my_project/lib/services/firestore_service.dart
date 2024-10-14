@@ -1,9 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:math';
 
-
-class FirestoreService {//interação com o Firestore para gerenciamento de coleções 
-  final FirebaseFirestore _db = FirebaseFirestore.instance;//Cria uma instancia para interagir com o BD
+class FirestoreService {
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   // Adiciona um novo usuário diretamente na coleção 'Usuarios'
   Future<void> addUser({
@@ -13,12 +12,8 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
     String? infoAdicional,
   }) async {
     try {
-      // Valida o tipo de usuário
-      if (tipo != 'Aluno' && tipo != 'Professor') {
-        throw ArgumentError('Tipo de usuário inválido. Use "Aluno" ou "Professor".');
-      }
+      _validateUserType(tipo);
 
-       //Adiciona o usuário à coleção 'Usuarios' com os campos especificados
       await _db.collection('Usuarios').add({
         'email': email,
         'nome': nome,
@@ -31,13 +26,10 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
     }
   }
 
-  //Obtém todos os usuários de um tipo específico
+  // Obtém todos os usuários de um tipo específico
   Stream<List<Map<String, dynamic>>> getUsers(String tipo) {
-    if (tipo != 'Aluno' && tipo != 'Professor') {
-      throw ArgumentError('Tipo de usuário inválido. Use "Aluno" ou "Professor".');
-    }
+    _validateUserType(tipo);
 
-    //Retorna um stream de usuários filtrados pelo tipo
     return _db
         .collection('Usuarios')
         .where('tipo', isEqualTo: tipo)
@@ -47,7 +39,7 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
             .toList());
   }
 
-  //Adiciona ou atualiza um usuário com um ID específico (por exemplo, UID)
+  // Adiciona ou atualiza um usuário com um ID específico (por exemplo, UID)
   Future<void> upsertUser({
     required String uid, // UID do usuário
     required String email,
@@ -56,9 +48,7 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
     String? infoAdicional,
   }) async {
     try {
-      if (tipo != 'Aluno' && tipo != 'Professor') {
-        throw ArgumentError('Tipo de usuário inválido. Use "Aluno" ou "Professor".');
-      }
+      _validateUserType(tipo);
 
       //Adiciona ou atualiza o usuário com o UID fornecido
       await _db.collection('Usuarios').doc(uid).set({
@@ -73,7 +63,7 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
     }
   }
 
-  //Método para obter o ID do documento de um usuário com base no e-mail
+  // Método para obter o ID do documento de um usuário com base no e-mail
   Future<String?> getDocumentIdByEmail(String email) async {
     try {
       final querySnapshot = await _db
@@ -119,17 +109,14 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
     }
   }
 
-
-
-  //Adiciona uma nova disciplina com uma chave de acesso
+  // Adiciona uma nova disciplina com uma chave de acesso
   Future<String?> addDisciplina({
-  required String nome,
-  required String descricao,
-  required String professorUid,
-
+    required String nome,
+    required String descricao,
+    required String professorUid,
   }) async {
     try {
-      String codigoAcesso = _gerarCodigoAcesso();//Gera codigo de acesso
+      String codigoAcesso = _gerarCodigoAcesso(); //Gera codigo de acesso
       await _db.collection('Disciplinas').add({
         'nome': nome,
         'descricao': descricao,
@@ -137,17 +124,11 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
         'codigoAcesso': codigoAcesso,
       });
       print('Disciplina adicionada com sucesso. Chave de acesso: $codigoAcesso');
-      return codigoAcesso; 
+      return codigoAcesso;
     } catch (e) {
       print('Erro ao adicionar disciplina: $e');
       return null;
     }
-  }
-  //Gera uma chave de acesso aleatória
-  String _gerarCodigoAcesso() {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#@_';
-    final Random rand = Random();
-    return List.generate(8, (index) => chars[rand.nextInt(chars.length)]).join();
   }
 
   // Método para obter as disciplinas de um professor pelo UID
@@ -172,12 +153,12 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
     required String disciplinaId,
     required String novoNome,
     required String novaDescricao,
-    required String professorUid, // Adicione este parâmetro
+    required String professorUid,
   }) async {
     try {
       // Obtendo a disciplina para verificar o professorUid
       final docSnapshot = await _db.collection('Disciplinas').doc(disciplinaId).get();
-      
+
       if (docSnapshot.exists) {
         final disciplinaData = docSnapshot.data() as Map<String, dynamic>;
 
@@ -207,11 +188,10 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
     try {
       // Obtendo a disciplina para verificar o professorUid
       final docSnapshot = await _db.collection('Disciplinas').doc(disciplinaId).get();
-      
+
       if (docSnapshot.exists) {
         final disciplinaData = docSnapshot.data() as Map<String, dynamic>;
 
-        // Verificando se o professorUid corresponde ao da disciplina
         if (disciplinaData['professorUid'] == professorUid) {
           await _db.collection('Disciplinas').doc(disciplinaId).delete();
           print('Disciplina excluída com sucesso.');
@@ -226,9 +206,7 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
     }
   }
 
-
-  
-// Método para inscrever um aluno em uma disciplina
+  // Método para inscrever um aluno em uma disciplina
   Future<void> inscreverAluno(String disciplinaId, String alunoUid, String codigoAcesso) async {
     try {
       DocumentSnapshot disciplinaSnapshot = await _db.collection('Disciplinas').doc(disciplinaId).get();
@@ -240,7 +218,7 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
           await _db.collection('Matriculas').add({
             'alunoUid': alunoUid,
             'disciplinaId': disciplinaId,
-            'professorUid': disciplinaSnapshot['professorUid'], // Armazena o ID do professor
+            'professorUid': disciplinaSnapshot['professorUid'],
             'dataMatricula': FieldValue.serverTimestamp(),
           });
           print('Aluno inscrito na disciplina com sucesso.');
@@ -272,9 +250,10 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
     }
   }
 
+  // Método para obter portfólios por disciplina
   Future<List<Map<String, dynamic>>> getPortfoliosPorDisciplina(String disciplinaId) async {
     try {
-      QuerySnapshot snapshot = await FirebaseFirestore.instance
+      QuerySnapshot snapshot = await _db
           .collection('Disciplinas')
           .doc(disciplinaId)
           .collection('Portfolios')
@@ -289,7 +268,7 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
         return {
           ...data,
           'id': doc.id, // Inclui o ID do documento, se necessário
-          'titulo': data['titulo'] ?? 'Título não disponível' // Atualizado para usar 'titulo'
+          'titulo': data['titulo'] ?? 'Título não disponível', // Atualizado para usar 'titulo'
         };
       }).toList();
     } catch (e) {
@@ -298,6 +277,7 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
     }
   }
 
+  // Método para excluir portfólio
   Future<void> excluirPortfolio({
     required String disciplinaId,
     required String portfolioId,
@@ -331,36 +311,48 @@ class FirestoreService {//interação com o Firestore para gerenciamento de cole
   // Método para buscar portfólios associados ao aluno pelo seu ID
   Future<List<String>> getPortfoliosByStudentId(String studentId) async {
     List<String> portfolios = [];
-    
+
     try {
       // Buscar as matrículas do aluno
       QuerySnapshot matriculasSnapshot = await _db
-          .collection('matriculas')
-          .where('idAluno', isEqualTo: studentId)
+          .collection('Matriculas')
+          .where('alunoUid', isEqualTo: studentId)
           .get();
 
       for (var matriculaDoc in matriculasSnapshot.docs) {
         // Para cada matrícula, buscar as disciplinas
-        String disciplinaId = matriculaDoc['idDisciplina'];
+        String disciplinaId = matriculaDoc['disciplinaId'];
 
         // Buscar a subcoleção de portfólios na disciplina
         QuerySnapshot portfoliosSnapshot = await _db
-            .collection('disciplinas')
+            .collection('Disciplinas')
             .doc(disciplinaId)
-            .collection('portfolios')
+            .collection('Portfolios')
             .get();
 
         // Adicionar os portfólios à lista
         for (var portfolioDoc in portfoliosSnapshot.docs) {
-          portfolios.add(portfolioDoc['nome']); // Supondo que o campo que você quer é 'nome'
+          portfolios.add(portfolioDoc['nome']);
         }
       }
     } catch (e) {
-      print('Erro ao buscar portfólios: $e'); // Tratar o erro conforme necessário
+      print('Erro ao buscar portfólios: $e');
     }
 
     return portfolios;
   }
-}
-  
 
+  // Valida o tipo de usuário
+  void _validateUserType(String tipo) {
+    if (tipo != 'Aluno' && tipo != 'Professor') {
+      throw ArgumentError('Tipo de usuário inválido. Use "Aluno" ou "Professor".');
+    }
+  }
+
+  // Gera uma chave de acesso aleatória
+  String _gerarCodigoAcesso() {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#@_';
+    final Random rand = Random();
+    return List.generate(8, (index) => chars[rand.nextInt(chars.length)]).join();
+  }
+}
