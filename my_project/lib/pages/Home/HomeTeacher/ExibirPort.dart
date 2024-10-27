@@ -88,7 +88,7 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
             const SizedBox(width: 10),
             Text(
               _teacherName ?? 'Carregando...',
-              style: TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.w500),
+              style: const TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.w500),
             ),
           ],
         ),
@@ -102,9 +102,9 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     const Divider(color: Colors.grey),
-                    Text(
+                    const Text(
                       'Portfólios',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
@@ -115,10 +115,8 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
                       Center(
                         child: Padding(
                           padding: const EdgeInsets.all(16.0),
-                          child: Text(
-                            'Nenhuma disciplina cadastrada.',
-                            style: TextStyle(color: Colors.grey[600], fontSize: 16),
-                            textAlign: TextAlign.center,
+                          child: CircularProgressIndicator(
+                            color: Colors.grey[600],
                           ),
                         ),
                       )
@@ -146,7 +144,7 @@ class _TeacherPortfolioPageState extends State<TeacherPortfolioPage> {
                                     color: Colors.grey.withOpacity(0.2),
                                     spreadRadius: 2,
                                     blurRadius: 5,
-                                    offset: Offset(0, 3),
+                                    offset: const Offset(0, 3),
                                   ),
                                 ],
                               ),

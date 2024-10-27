@@ -11,8 +11,8 @@ class IconPortfolio extends StatelessWidget {
       padding: const EdgeInsets.all(16.0),
       child: GridView.builder(
         shrinkWrap: true, // Permite que o GridView use apenas o espaço necessário
-        physics: NeverScrollableScrollPhysics(), // Desativa a rolagem interna do GridView
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        physics: const NeverScrollableScrollPhysics(), // Desativa a rolagem interna do GridView
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2, // Duas colunas
           crossAxisSpacing: 16.0,
           mainAxisSpacing: 16.0,
@@ -34,7 +34,7 @@ class IconPortfolio extends StatelessWidget {
                     color: Colors.grey.withOpacity(0.5),
                     spreadRadius: 2,
                     blurRadius: 5,
-                    offset: Offset(0, 3),
+                    offset: const Offset(0, 3),
                   ),
                 ],
               ),
@@ -46,10 +46,10 @@ class IconPortfolio extends StatelessWidget {
                     height: 100,
                     width: 100,
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     'Portfólio ${index + 1}',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
