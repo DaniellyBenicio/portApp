@@ -8,29 +8,32 @@ class PortfolioService {
         .collection('Disciplinas')
         .doc(disciplinaId)
         .collection('Portfolios')
+        .where('alunoUid', isEqualTo: userUid) // Adiciona o filtro pelo aluno
         .orderBy('dataCriacao', descending: true);
 
     if (lastDocument != null) {
       query = query.startAfterDocument(lastDocument);
     }
 
-    QuerySnapshot querySnapshot = await query.limit(10).get();
-
-    print('Documentos retornados: ${querySnapshot.docs.length}');
-
-    return _filterAndMapPortfolios(querySnapshot, userUid);
+    try {
+      QuerySnapshot querySnapshot = await query.limit(10).get();
+      return _filterAndMapPortfolios(querySnapshot, userUid);
+    } catch (e) {
+      return []; // Retorna uma lista vazia em caso de erro
+    }
   }
-
-  /// Método para adicionar um portfólio a uma disciplina
+    
   Future<String> adicionarPortfolio({
     required String disciplinaId,
     required String titulo,
     required String descricao,
     required String professorUid,
   }) async {
+    // Validação de dados
     _validatePortfolioData(titulo, descricao, professorUid);
 
     try {
+      // Cria o portfólio com alunoUids vazio
       final DocumentReference docRef = await _firestore.collection('Disciplinas')
           .doc(disciplinaId)
           .collection('Portfolios')
@@ -39,6 +42,7 @@ class PortfolioService {
         'descricao': descricao,
         'professorUid': professorUid,
         'dataCriacao': FieldValue.serverTimestamp(),
+        'alunoUids': [] // Inicializa como lista vazia
       });
       return docRef.id; 
     } catch (e) {
@@ -211,6 +215,43 @@ class PortfolioService {
 
     if (matriculas.docs.isEmpty) {
       throw Exception('Aluno não matriculado na disciplina correspondente.');
+    }
+  }
+
+  Future<void> associarAlunoAoPortfolio(String alunoUid, String disciplinaId) async {
+    try {
+      // Primeiro, buscamos o portfólio da disciplina.
+      QuerySnapshot portfolioSnapshot = await _firestore
+          .collection('Portfolios')
+          .where('disciplinaId', isEqualTo: disciplinaId)
+          .get();
+
+      // Verificamos se o portfólio existe.
+      if (portfolioSnapshot.docs.isNotEmpty) {
+        for (DocumentSnapshot portfolioDoc in portfolioSnapshot.docs) {
+          // Obtemos o ID do portfólio.
+          String portfolioId = portfolioDoc.id;
+
+          // Verifica se o campo 'alunosUids' (um array de UIDs) já existe no portfólio
+          List<dynamic> alunosUids = portfolioDoc['alunosUids'] ?? [];
+
+          // Verifica se o UID do aluno já não está no array, para evitar duplicação
+          if (!alunosUids.contains(alunoUid)) {
+            // Adiciona o alunoUid ao array 'alunosUids' usando o método FieldValue.arrayUnion
+            await _firestore.collection('Portfolios').doc(portfolioId).update({
+              'alunosUids': FieldValue.arrayUnion([alunoUid])
+            });
+            print('Aluno $alunoUid associado ao portfólio $portfolioId com sucesso.');
+          } else {
+            print('Aluno $alunoUid já está associado ao portfólio $portfolioId.');
+          }
+        }
+      } else {
+        print('Nenhum portfólio encontrado para a disciplina: $disciplinaId');
+      }
+    } catch (e) {
+      print('Erro ao associar aluno ao portfólio: $e');
+      throw Exception('Erro ao associar aluno ao portfólio: $e');
     }
   }
 }
