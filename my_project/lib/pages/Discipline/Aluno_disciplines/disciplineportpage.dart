@@ -29,11 +29,10 @@ class _DisciplinePortPageState extends State<DisciplinePortPage> {
     }
 
     try {
-      // Primeiro, verifique se o aluno está matriculado na disciplina
       final matriculaSnapshot = await FirebaseFirestore.instance
           .collection('Matriculas')
           .where('alunoUid', isEqualTo: user.uid)
-          .where('disciplinaId', isEqualTo: widget.disciplinaId) // Presumindo que você tenha a disciplinaId
+          .where('disciplinaId', isEqualTo: widget.disciplinaId) 
           .get();
 
       if (matriculaSnapshot.docs.isEmpty) {
@@ -112,7 +111,7 @@ class _DisciplinePortPageState extends State<DisciplinePortPage> {
                         title: Text(portfolios[index]['titulo']),
                         subtitle: Text(portfolios[index]['descricao']),
                         onTap: () {
-                          // Aqui você pode implementar a navegação para os detalhes do portfólio, se necessário
+                          //Mais detalhes?
                         },
                       ),
                     );

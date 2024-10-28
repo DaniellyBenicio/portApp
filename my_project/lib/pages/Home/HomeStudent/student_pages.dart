@@ -15,13 +15,14 @@ class StudentPortfolioPage extends StatefulWidget {
 
 class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
   final PortfolioService _portfolioService = PortfolioService();
-  final FirestoreService _firestoreService = FirestoreService(); 
+  final FirestoreService _firestoreService = FirestoreService();
   String? _studentName;
   String? profileImageUrl;
-  bool _isLoading = true; // Variável para controle de loading
-  List<Map<String, dynamic>> _portfolios = []; // Lista para armazenar os portfólios do aluno
-  List<Map<String, dynamic>> _disciplinas = []; // Lista para armazenar as disciplinas
-  String? _selectedDisciplina; // Disciplina selecionada
+  bool _isLoading = true;
+  List<Map<String, dynamic>> _portfolios = [];
+  List<Map<String, dynamic>> _disciplinas = [];
+  String? _selectedDisciplina;
+  String? _errorMessage;
 
   @override
   void initState() {
@@ -35,22 +36,18 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
       if (user != null) {
         String alunoUid = user.uid;
 
-        // Buscar o nome e a imagem do perfil do aluno
         await _fetchStudentName();
-
-        // Buscar portfólios e disciplinas usando o ID do aluno
-        _portfolios = await _portfolioService.getPortfoliosForStudent(alunoUid);
-        _disciplinas = await _fetchStudentDisciplinas(alunoUid); // Novo método para buscar disciplinas
-
-        // Filtrar os portfólios pela disciplina selecionada após o carregamento inicial
-        _filterPortfoliosByDisciplina();
+        await _fetchStudentDisciplinas(alunoUid);
+        await _fetchPortfolios(alunoUid);
       }
     } catch (e) {
-      print('Erro ao carregar os dados do aluno: $e');
+      print("Erro ao buscar dados do estudante: $e");
     } finally {
-      setState(() {
-        _isLoading = false; // Encerrar o loading
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -59,64 +56,77 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         String email = user.email ?? "";
-        Map<String, String>? userData = await _firestoreService.getNomeAndImageByEmail(email); 
+        Map<String, String>? userData = await _firestoreService.getNomeAndImageByEmail(email);
 
         if (userData != null && userData.isNotEmpty) {
           String fullName = userData['nome'] ?? 'Aluno';
           List<String> nameParts = fullName.split(' ');
-          String firstName = nameParts.length >= 2
-              ? '${nameParts[1]} ${nameParts[2]}'
-              : nameParts[0];
-          setState(() {
-            _studentName = firstName;
-            profileImageUrl = userData['profileImageUrl'] ?? '';
-          });
+          String firstName = nameParts.isNotEmpty ? nameParts[0] : 'Aluno';
+
+          if (mounted) {
+            setState(() {
+              _studentName = firstName;
+              profileImageUrl = userData['profileImageUrl'] ?? '';
+            });
+          }
         } else {
-          setState(() {
-            _studentName = 'Aluno';
-          });
+          if (mounted) {
+            setState(() {
+              _studentName = 'Aluno';
+            });
+          }
         }
       }
     } catch (e) {
-      print('Erro ao carregar o nome do aluno: $e');
+      print("Erro ao buscar nome do estudante: $e");
     }
   }
 
-  Future<List<Map<String, dynamic>>> _fetchStudentDisciplinas(String alunoUid) async {
-    final matriculasSnapshot = await FirebaseFirestore.instance
-        .collection('Matriculas')
-        .where('alunoUid', isEqualTo: alunoUid)
-        .get();
+  Future<void> _fetchStudentDisciplinas(String alunoUid) async {
+    try {
+      final matriculasSnapshot = await FirebaseFirestore.instance
+          .collection('Matriculas')
+          .where('alunoUid', isEqualTo: alunoUid)
+          .get();
 
-    // Obtenha todos os disciplinaIds
-    List<String> disciplinaIds = matriculasSnapshot.docs.map((doc) => doc['disciplinaId'] as String).toList();
+      List<String> disciplinaIds = matriculasSnapshot.docs.map((doc) => doc['disciplinaId'] as String).toList();
 
-    // Busque informações das disciplinas
-    List<Map<String, dynamic>> disciplinas = [];
-    for (String disciplinaId in disciplinaIds) {
-      var disciplinaDoc = await FirebaseFirestore.instance.collection('Disciplinas').doc(disciplinaId).get();
-      if (disciplinaDoc.exists) {
-        disciplinas.add({
-          'id': disciplinaId,
-          'nome': disciplinaDoc['nome'] 
-        });
+      List<Map<String, dynamic>> disciplinas = [];
+      for (String disciplinaId in disciplinaIds) {
+        var disciplinaDoc = await FirebaseFirestore.instance.collection('Disciplinas').doc(disciplinaId).get();
+        if (disciplinaDoc.exists) {
+          disciplinas.add({
+            'id': disciplinaId,
+            'nome': disciplinaDoc['nome']
+          });
+        }
       }
-    }
 
-    return disciplinas;
+      setState(() {
+        _disciplinas = disciplinas;
+      });
+    } catch (e) {
+      print("Erro ao buscar disciplinas: $e");
+    }
   }
 
-  void _filterPortfoliosByDisciplina() {
-    // Se nenhuma disciplina estiver selecionada, mantenha todos os portfólios
-    if (_selectedDisciplina != null) {
+  Future<void> _fetchPortfolios(String alunoUid) async {
+    try {
+      print("Buscando portfólios para o aluno: $alunoUid com disciplina: $_selectedDisciplina");
+
+      if (_selectedDisciplina != null) {
+        _portfolios = await _portfolioService.getPortfolios(_selectedDisciplina!, null, alunoUid);
+      } else {
+        _portfolios = await _portfolioService.getPortfoliosForStudent(alunoUid);
+      }
+
+      print("Portfólios encontrados: $_portfolios");
+      setState(() {});
+    } catch (e) {
+      print("Erro ao buscar portfólios: $e");
       setState(() {
-        _portfolios = _portfolios.where((portfolio) {
-          return portfolio['disciplinaId'] == _selectedDisciplina; 
-        }).toList();
+        _errorMessage = "Não foi possível carregar os portfólios. Tente novamente.";
       });
-    } else {
-      // Se não houver disciplina selecionada, recarregue todos os portfólios
-      _fetchStudentData();
     }
   }
 
@@ -135,22 +145,18 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
             Text(_studentName ?? 'Carregando...'),
           ],
         ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.0),
-          child: Container(
-            color: Colors.grey,
-            height: 1.0,
-          ),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1.0),
+          child: Divider(color: Colors.grey),
         ),
         actions: [
-          // Barra azul para filtrar por disciplina
           GestureDetector(
             onTap: () {
               _showDisciplinaDropdown(context);
             },
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
-              color: const Color(0xFF007BFF), 
+              color: const Color(0xFF007BFF),
               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
@@ -182,45 +188,30 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // Verificar se está carregando
                 if (_isLoading)
-                  const Center(
-                    child: CircularProgressIndicator(),
+                  const Center(child: CircularProgressIndicator())
+                else if (_errorMessage != null)
+                  Center(child: Text(_errorMessage!, style: TextStyle(color: Colors.red)))
+                else if (_portfolios.isNotEmpty)
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _portfolios.length,
+                    itemBuilder: (context, index) {
+                      final portfolio = _portfolios[index];
+                      return Card(
+                        child: ListTile(
+                          title: Text(portfolio['titulo']),
+                          subtitle: Text(DateFormat('dd/MM/yyyy').format(portfolio['dataCriacao'].toDate())),
+                          onTap: () {
+                            // Navegação para a página de detalhes do portfólio
+                          },
+                        ),
+                      );
+                    },
                   )
                 else
-                  _portfolios.isNotEmpty
-                      ? ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: _portfolios.length,
-                          itemBuilder: (context, index) {
-                            final portfolio = _portfolios[index];
-
-                            // Conversão do Timestamp para DateTime
-                            Timestamp timestamp = portfolio['dataCriacao'];
-                            DateTime date = timestamp.toDate();
-
-                            // Formatação da data
-                            String formattedDate = DateFormat('dd/MM/yyyy').format(date);
-
-                            return Card(
-                              child: ListTile(
-                                title: Text(portfolio['titulo'] ?? 'Sem título'),
-                                subtitle: Text('Data de criação: $formattedDate'),
-                              ),
-                            );
-                          },
-                        )
-                      : const Center(
-                          child: Text(
-                            'Você ainda não possui portfólios',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ),
+                  const Center(child: Text('Nenhum portfólio encontrado.')),
               ],
             ),
           );
@@ -232,34 +223,31 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
   void _showDisciplinaDropdown(BuildContext context) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (context) {
         return AlertDialog(
-          title: const Text('Selecione uma disciplina'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: _disciplinas.map((disciplina) {
+          title: const Text('Selecione uma Disciplina'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              itemCount: _disciplinas.length,
+              itemBuilder: (context, index) {
                 return ListTile(
-                  title: Text(disciplina['nome']),
+                  title: Text(_disciplinas[index]['nome']),
                   onTap: () {
-                    if (disciplina['id'] != _selectedDisciplina) {
-                      setState(() {
-                        _selectedDisciplina = disciplina['id'];
-                        // Filtrar os portfólios quando a disciplina mudar
-                        _filterPortfoliosByDisciplina(); 
-                      });
-                    }
-                    Navigator.of(context).pop(); // Fecha o dialog
+                    setState(() {
+                      _selectedDisciplina = _disciplinas[index]['id'];
+                    });
+                    _fetchPortfolios(FirebaseAuth.instance.currentUser!.uid);
+                    Navigator.pop(context);
                   },
                 );
-              }).toList(),
+              },
             ),
           ),
-          actions: <Widget>[
+          actions: [
             TextButton(
-              child: const Text('Cancelar'),
-              onPressed: () {
-                Navigator.of(context).pop(); 
-              },
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Fechar'),
             ),
           ],
         );
