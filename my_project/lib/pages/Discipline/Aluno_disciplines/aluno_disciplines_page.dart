@@ -113,44 +113,58 @@ class _AlunoDisciplinesPageState extends State<AlunoDisciplinesPage> {
   }
 
   Future<void> _buscarDisciplinaPorCodigo() async {
-    final codigoAcesso = codigoController.text.trim();
-    if (codigoAcesso.isEmpty) {
-      showSnackBar(context, 'Por favor, insira um código de acesso');
+  final codigoAcesso = codigoController.text.trim();
+  if (codigoAcesso.isEmpty) {
+    showSnackBar(context, 'Por favor, insira um código de acesso');
+    return;
+  }
+
+  try {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      showSnackBar(context, 'Usuário não autenticado');
       return;
     }
 
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        showSnackBar(context, 'Usuário não autenticado');
-        return;
-      }
+    final snapshot = await FirebaseFirestore.instance
+        .collection('Disciplinas')
+        .where('codigoAcesso', isEqualTo: codigoAcesso)
+        .get();
 
-      final snapshot = await FirebaseFirestore.instance
-          .collection('Disciplinas')
-          .where('codigoAcesso', isEqualTo: codigoAcesso)
+    if (snapshot.docs.isNotEmpty) {
+      final disciplina = {
+        'id': snapshot.docs.first.id,
+        ...snapshot.docs.first.data() as Map<String, dynamic>,
+      };
+
+      // Verifica se o aluno já está matriculado na disciplina
+      final matriculaSnapshot = await FirebaseFirestore.instance
+          .collection('Matriculas')
+          .where('alunoUid', isEqualTo: user.uid)
+          .where('disciplinaId', isEqualTo: disciplina['id'])
           .get();
 
-      if (snapshot.docs.isNotEmpty) {
-        final disciplina = {
-          'id': snapshot.docs.first.id,
-          ...snapshot.docs.first.data() as Map<String, dynamic>,
-        };
-        await matricularAluno(disciplina['id']);
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => DisciplinaDetalhesPage(disciplina: disciplina),
-          ),
-        );
-        codigoController.clear();
-      } else {
-        showSnackBar(context, 'Código de acesso inválido ou disciplina não encontrada');
+      if (matriculaSnapshot.docs.isNotEmpty) {
+        showSnackBar(context, 'Você já está matriculado nesta disciplina.');
+        return; // Saia da função se já estiver matriculado
       }
-    } catch (e) {
-      handleError('Erro ao buscar disciplina', e);
+
+      // Se não estiver matriculado, prossegue com a matrícula
+      await matricularAluno(disciplina['id']);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DisciplinaDetalhesPage(disciplina: disciplina),
+        ),
+      );
+      codigoController.clear();
+    } else {
+      showSnackBar(context, 'Código de acesso inválido ou disciplina não encontrada');
     }
+  } catch (e) {
+    handleError('Erro ao buscar disciplina', e);
   }
+}
 
   void _showAddDisciplinaDialog() {
     showDialog(
