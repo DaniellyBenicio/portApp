@@ -76,7 +76,7 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
         }
       }
     } catch (e) {
-      print("Erro ao buscar nome do estudante: $e");
+      //
     }
   }
 
@@ -113,13 +113,12 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
 
   Future<void> _fetchPortfolios(String alunoUid) async {
     try {
-      // Busca portfólios filtrados pela disciplina ou todos os portfólios
       _portfolios = await _portfolioService.getPortfolios(
-        _selectedDisciplina, // O parâmetro pode ser nulo se nenhuma disciplina foi selecionada
+        _selectedDisciplina,
         alunoUid
       );
       
-      setState(() {}); // Atualiza a interface com os portfólios carregados
+      setState(() {}); 
     } catch (e) {
       setState(() {
         _errorMessage = "Não foi possível carregar os portfólios. Tente novamente.";
