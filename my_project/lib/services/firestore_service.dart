@@ -205,15 +205,33 @@ class FirestoreService {
       print('Erro ao excluir disciplina: $e');
     }
   }
-// Método para inscrever um aluno em uma disciplina
+  // Método para inscrever um aluno em uma disciplina
 Future<void> inscreverAluno(String disciplinaId, String alunoUid, String codigoAcesso) async {
   try {
+    // Obtém a disciplina
     DocumentSnapshot disciplinaSnapshot = await _db.collection('Disciplinas').doc(disciplinaId).get();
 
     if (disciplinaSnapshot.exists) {
       String? codigoValido = disciplinaSnapshot['codigoAcesso'];
+      
+      // Verifica se o código de acesso é válido
       if (codigoAcesso == codigoValido) {
-        // Cria a coleção "Matriculas" para registrar a matrícula do aluno
+        // Verifica se o aluno já está inscrito na disciplina
+        var matriculaSnapshot = await _db.collection('Matriculas')
+            .where('alunoUid', isEqualTo: alunoUid)
+            .where('disciplinaId', isEqualTo: disciplinaId)
+            .get();
+
+        // Log para verificar o retorno da consulta
+        print('Verificando matrícula para aluno: $alunoUid na disciplina: $disciplinaId. Resultados: ${matriculaSnapshot.docs.length}');
+
+        // Se o aluno já estiver matriculado, avisa e retorna
+        if (matriculaSnapshot.docs.isNotEmpty) {
+          print('Aluno já está inscrito nesta disciplina.');
+          return; // O aluno já está inscrito
+        }
+
+        // Se o aluno não estiver matriculado, realiza a matrícula
         await _db.collection('Matriculas').add({
           'alunoUid': alunoUid,
           'disciplinaId': disciplinaId,
@@ -222,24 +240,8 @@ Future<void> inscreverAluno(String disciplinaId, String alunoUid, String codigoA
         });
         print('Aluno inscrito na disciplina com sucesso.');
 
-        // Atualiza os portfólios associados à disciplina, adicionando o aluno à lista
-        final portfoliosSnapshot = await _db
-            .collection('Disciplinas')
-            .doc(disciplinaId)
-            .collection('Portfolios')
-            .get();
-
-        for (var doc in portfoliosSnapshot.docs) {
-          final portfolioRef = _db.collection('Disciplinas')
-              .doc(disciplinaId)
-              .collection('Portfolios')
-              .doc(doc.id);
-          
-          // Adiciona o alunoUid à lista de alunos do portfólio
-          await portfolioRef.update({
-            'alunoUids': FieldValue.arrayUnion([alunoUid]),
-          });
-        }
+        // Atualiza os portfólios associados à disciplina
+        await adicionarAlunoAosPortfolios(disciplinaId, alunoUid);
       } else {
         print('Chave de acesso inválida.');
       }
@@ -250,6 +252,32 @@ Future<void> inscreverAluno(String disciplinaId, String alunoUid, String codigoA
     print('Erro ao inscrever aluno: $e');
   }
 }
+
+    //adicionar o aluno aos portfólios
+  Future<void> adicionarAlunoAosPortfolios(String disciplinaId, String alunoUid) async {
+    try {
+      // Obtém os portfólios da disciplina
+      final portfoliosSnapshot = await _db
+          .collection('Disciplinas')
+          .doc(disciplinaId)
+          .collection('Portfolios')
+          .get();
+
+      for (var doc in portfoliosSnapshot.docs) {
+        final portfolioRef = _db.collection('Disciplinas')
+            .doc(disciplinaId)
+            .collection('Portfolios')
+            .doc(doc.id);
+        
+        // Adiciona o alunoUid à lista de alunos do portfólio
+        await portfolioRef.update({
+          'alunoUids': FieldValue.arrayUnion([alunoUid]),
+        });
+      }
+    } catch (e) {
+      print('Erro ao adicionar aluno aos portfólios: $e');
+    }
+  }
 
 
   // Método para obter as disciplinas em que o aluno está matriculado
