@@ -3,26 +3,58 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class PortfolioService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<List<Map<String, dynamic>>> getPortfolios(String disciplinaId, DocumentSnapshot? lastDocument, String userUid) async {
-    Query query = _firestore
-        .collection('Disciplinas')
-        .doc(disciplinaId)
-        .collection('Portfolios')
-        .where('alunoUid', isEqualTo: userUid) // Adiciona o filtro pelo aluno
-        .orderBy('dataCriacao', descending: true);
+  Future<List<Map<String, dynamic>>> getPortfolios(String? disciplinaId, String alunoUid) async {
+  try {
+    if (disciplinaId != null) {
+      // Busca portfólios para uma disciplina específica
+      Query query = _firestore
+          .collection('Disciplinas')
+          .doc(disciplinaId)
+          .collection('Portfolios')
+          .where('alunoUid', isEqualTo: alunoUid)
+          .orderBy('dataCriacao', descending: true);
 
-    if (lastDocument != null) {
-      query = query.startAfterDocument(lastDocument);
-    }
+      QuerySnapshot querySnapshot = await query.get();
+      return _filterAndMapPortfolios(querySnapshot, alunoUid);
+    } else {
+      // Busca todos os portfólios para o aluno
+      final matriculasSnapshot = await _firestore
+          .collection('Matriculas')
+          .where('alunoUid', isEqualTo: alunoUid)
+          .get();
 
-    try {
-      QuerySnapshot querySnapshot = await query.limit(10).get();
-      return _filterAndMapPortfolios(querySnapshot, userUid);
-    } catch (e) {
-      return []; // Retorna uma lista vazia em caso de erro
+      List<String> disciplinaIds = matriculasSnapshot.docs.map((doc) => doc['disciplinaId'] as String).toList();
+
+      if (disciplinaIds.isEmpty) return [];
+
+      List<Map<String, dynamic>> portfolios = [];
+
+      for (String disciplinaId in disciplinaIds) {
+        final portfoliosSnapshot = await _firestore
+            .collection('Disciplinas')
+            .doc(disciplinaId)
+            .collection('Portfolios')
+            .orderBy('dataCriacao', descending: true)
+            .get();
+
+        for (var doc in portfoliosSnapshot.docs) {
+          portfolios.add({
+            'id': doc.id,
+            'titulo': doc['titulo'],
+            'dataCriacao': doc['dataCriacao'],
+          });
+        }
+      }
+
+      return portfolios;
     }
+  } catch (e) {
+    print("Erro ao buscar portfólios: $e");
+    return [];
   }
-    
+}
+
+
   Future<String> adicionarPortfolio({
     required String disciplinaId,
     required String titulo,
@@ -149,33 +181,6 @@ class PortfolioService {
       'descricao': descricao,
       'dataAtualizacao': FieldValue.serverTimestamp(),
     });
-  }
-
-  Future<List<Map<String, dynamic>>> getPortfoliosForStudent(String alunoUid) async {
-    // Primeiro, busque todas as matrículas do aluno
-    final matriculasSnapshot = await _firestore
-        .collection('Matriculas')
-        .where('alunoUid', isEqualTo: alunoUid)
-        .get();
-
-    // Obtenha todos os disciplinaIds
-    List<String> disciplinaIds = matriculasSnapshot.docs.map((doc) => doc['disciplinaId'] as String).toList();
-
-    List<Map<String, dynamic>> portfolios = [];
-
-    // Para cada disciplinaId, busque os portfólios
-    for (String disciplinaId in disciplinaIds) {
-      final portfoliosSnapshot = await _firestore
-          .collection('Disciplinas')
-          .doc(disciplinaId)
-          .collection('Portfolios')
-          .orderBy('dataCriacao', descending: true)
-          .get();
-      // Adicione os portfólios encontrados à lista
-      _addPortfolios(portfoliosSnapshot, portfolios);
-    }
-
-    return portfolios;
   }
 
   // Adiciona os portfólios do snapshot à lista de portfólios
