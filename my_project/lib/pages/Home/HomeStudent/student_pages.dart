@@ -60,12 +60,10 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
 
         if (userData != null && userData.isNotEmpty) {
           String fullName = userData['nome'] ?? 'Aluno';
-          List<String> nameParts = fullName.split(' ');
-          String firstName = nameParts.isNotEmpty ? nameParts[0] : 'Aluno';
 
           if (mounted) {
             setState(() {
-              _studentName = firstName;
+              _studentName = fullName;
               profileImageUrl = userData['profileImageUrl'] ?? '';
             });
           }
@@ -99,6 +97,9 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
             'id': disciplinaId,
             'nome': disciplinaDoc['nome']
           });
+
+          // Adiciona o aluno aos portfólios desta disciplina
+          await _firestoreService.adicionarAlunoAosPortfolios(disciplinaId, alunoUid);
         }
       }
 
@@ -112,23 +113,20 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
 
   Future<void> _fetchPortfolios(String alunoUid) async {
     try {
-      print("Buscando portfólios para o aluno: $alunoUid com disciplina: $_selectedDisciplina");
-
-      if (_selectedDisciplina != null) {
-        _portfolios = await _portfolioService.getPortfolios(_selectedDisciplina!, null, alunoUid);
-      } else {
-        _portfolios = await _portfolioService.getPortfoliosForStudent(alunoUid);
-      }
-
-      print("Portfólios encontrados: $_portfolios");
-      setState(() {});
+      // Busca portfólios filtrados pela disciplina ou todos os portfólios
+      _portfolios = await _portfolioService.getPortfolios(
+        _selectedDisciplina, // O parâmetro pode ser nulo se nenhuma disciplina foi selecionada
+        alunoUid
+      );
+      
+      setState(() {}); // Atualiza a interface com os portfólios carregados
     } catch (e) {
-      print("Erro ao buscar portfólios: $e");
       setState(() {
         _errorMessage = "Não foi possível carregar os portfólios. Tente novamente.";
       });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -191,7 +189,7 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
                 if (_isLoading)
                   const Center(child: CircularProgressIndicator())
                 else if (_errorMessage != null)
-                  Center(child: Text(_errorMessage!, style: TextStyle(color: Colors.red)))
+                  Center(child: Text(_errorMessage!, style: const TextStyle(color: Colors.red)))
                 else if (_portfolios.isNotEmpty)
                   ListView.builder(
                     shrinkWrap: true,
@@ -235,10 +233,11 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
                   title: Text(_disciplinas[index]['nome']),
                   onTap: () {
                     setState(() {
-                      _selectedDisciplina = _disciplinas[index]['id'];
+                      _selectedDisciplina = _disciplinas[index]['id']; // Seleciona a disciplina
                     });
+                    // Recarrega os portfólios da disciplina selecionada
                     _fetchPortfolios(FirebaseAuth.instance.currentUser!.uid);
-                    Navigator.pop(context);
+                    Navigator.pop(context); // Fecha o diálogo
                   },
                 );
               },
