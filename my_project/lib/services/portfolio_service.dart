@@ -3,21 +3,34 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class PortfolioService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<List<Map<String, dynamic>>> getPortfolios(String? disciplinaId, String alunoUid) async {
+Future<List<Map<String, dynamic>>> getPortfolios(String? disciplinaId, String alunoUid) async {
   try {
     if (disciplinaId != null) {
-      // Busca portfólios para uma disciplina específica
+      
+      // Consulta portfólios para a disciplina
       Query query = _firestore
           .collection('Disciplinas')
           .doc(disciplinaId)
           .collection('Portfolios')
-          .where('alunoUid', isEqualTo: alunoUid)
-          .orderBy('dataCriacao', descending: true);
+          .orderBy('dataCriacao', descending: true);  // Removeu o filtro 'alunoUid', caso os portfólios sejam para todos os alunos
 
       QuerySnapshot querySnapshot = await query.get();
-      return _filterAndMapPortfolios(querySnapshot, alunoUid);
+
+      if (querySnapshot.docs.isEmpty) {
+        return [];
+      }
+
+      // Organiza os portfólios
+      List<Map<String, dynamic>> portfolios = querySnapshot.docs.map((doc) {
+        return {
+          'id': doc.id,
+          'titulo': doc['titulo'],
+          'dataCriacao': doc['dataCriacao'],
+        };
+      }).toList();
+      return portfolios;
+
     } else {
-      // Busca todos os portfólios para o aluno
       final matriculasSnapshot = await _firestore
           .collection('Matriculas')
           .where('alunoUid', isEqualTo: alunoUid)
@@ -25,8 +38,11 @@ class PortfolioService {
 
       List<String> disciplinaIds = matriculasSnapshot.docs.map((doc) => doc['disciplinaId'] as String).toList();
 
-      if (disciplinaIds.isEmpty) return [];
+      if (disciplinaIds.isEmpty) {
+        return [];
+      }
 
+      // Organiza os portfólios de todas as disciplinas
       List<Map<String, dynamic>> portfolios = [];
 
       for (String disciplinaId in disciplinaIds) {
@@ -45,43 +61,49 @@ class PortfolioService {
           });
         }
       }
-
       return portfolios;
     }
   } catch (e) {
-    print("Erro ao buscar portfólios: $e");
     return [];
   }
 }
 
 
-  Future<String> adicionarPortfolio({
-    required String disciplinaId,
-    required String titulo,
-    required String descricao,
-    required String professorUid,
-  }) async {
-    // Validação de dados
-    _validatePortfolioData(titulo, descricao, professorUid);
+Future<String> adicionarPortfolio({
+  required String disciplinaId,
+  required String titulo,
+  required String descricao,
+  required String professorUid,
+  required List<String> tipoArquivo,
+  bool permitirComentario = false,
+  bool permitirMultipleFiles = false,
+}) async {
+  // Validação de dados
+  _validatePortfolioData(titulo, descricao, professorUid);
 
-    try {
-      // Cria o portfólio com alunoUids vazio
-      final DocumentReference docRef = await _firestore.collection('Disciplinas')
-          .doc(disciplinaId)
-          .collection('Portfolios')
-          .add({
-        'titulo': titulo,
-        'descricao': descricao,
-        'professorUid': professorUid,
-        'dataCriacao': FieldValue.serverTimestamp(),
-        'alunoUids': [] // Inicializa como lista vazia
-      });
-      return docRef.id; 
-    } catch (e) {
-      print('Erro ao adicionar portfólio: $e');
-      throw Exception('Erro ao adicionar portfólio: $e');
-    }
+  try {
+    // Cria o portfólio com alunoUids vazio e os novos campos
+    final DocumentReference docRef = await _firestore.collection('Disciplinas')
+        .doc(disciplinaId)
+        .collection('Portfolios')
+        .add({
+      'titulo': titulo,
+      'descricao': descricao,
+      'professorUid': professorUid,
+      'tipoArquivo': tipoArquivo,  // Salvando os novos parâmetros
+      'permitirComentario': permitirComentario,
+      'permitirMultipleFiles': permitirMultipleFiles,
+      'dataCriacao': FieldValue.serverTimestamp(),
+      'alunoUids': [] // Inicializa como lista vazia
+    });
+
+    return docRef.id; 
+  } catch (e) {
+    print('Erro ao adicionar portfólio: $e');
+    throw Exception('Erro ao adicionar portfólio: $e');
   }
+}
+
 
   /// Método para obter detalhes de um portfólio específico
   Future<Map<String, dynamic>> getPortfolioDetails(String disciplinaId, String portfolioId) async {
@@ -163,24 +185,33 @@ class PortfolioService {
       print('Erro ao excluir portfólio: $e');
       throw Exception('Erro ao excluir portfólio: $e');
     }
-  }
+    }
 
+    
   Future<void> editarPortfolio({
     required String disciplinaId,
     required String portfolioId,
     required String titulo,
     required String descricao,
+    required List<String> tipoArquivo, // Lista de tipos de arquivos permitidos
+    required bool permitirComentario, // Permitir ou não comentários
+    required bool permitirMultipleFiles, // Permitir ou não múltiplos arquivos
   }) async {
+    final updateData = {
+      'titulo': titulo,
+      'descricao': descricao,
+      'tipoArquivo': tipoArquivo,
+      'permitirComentario': permitirComentario,
+      'permitirMultipleFiles': permitirMultipleFiles,
+      'dataAtualizacao': FieldValue.serverTimestamp(),
+    };
+
     await _firestore
         .collection('Disciplinas')
         .doc(disciplinaId)
         .collection('Portfolios')
         .doc(portfolioId)
-        .update({
-      'titulo': titulo,
-      'descricao': descricao,
-      'dataAtualizacao': FieldValue.serverTimestamp(),
-    });
+        .update(updateData);
   }
 
   // Adiciona os portfólios do snapshot à lista de portfólios
@@ -259,4 +290,43 @@ class PortfolioService {
       throw Exception('Erro ao associar aluno ao portfólio: $e');
     }
   }
+
+
+  /// Salva ou atualiza um portfólio
+  Future<void> salvarPortfolio({
+    String? portfolioId,
+    required String disciplinaId,
+    required String titulo,
+    required String descricao,
+    required String professorUid,
+    required List<String> tipoArquivo,
+    required bool permitirComentario,
+    required bool permitirMultipleFiles,
+  }) async {
+    final portfolioData = {
+      'titulo': titulo,
+      'descricao': descricao,
+      'tipoArquivo': tipoArquivo,
+      'permitirComentario': permitirComentario,
+      'permitirMultipleFiles': permitirMultipleFiles,
+      'professorUid': professorUid,
+      'dataAtualizacao': FieldValue.serverTimestamp(),
+    };
+
+    final collectionRef = _firestore
+        .collection('Disciplinas')
+        .doc(disciplinaId)
+        .collection('Portfolios');
+
+    if (portfolioId == null) {
+      // Caso o portfólio seja novo (inserção)
+      portfolioData['dataCriacao'] = FieldValue.serverTimestamp();
+      await collectionRef.add(portfolioData);
+    } else {
+      // Caso o portfólio já exista (atualização)
+      await collectionRef.doc(portfolioId).update(portfolioData);
+    }
+  }
+  
+  
 }
