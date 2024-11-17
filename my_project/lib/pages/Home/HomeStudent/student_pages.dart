@@ -139,7 +139,13 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
               studentName: _studentName,
             ),
             const SizedBox(width: 10),
-            Text(_studentName ?? 'Carregando...'),
+            Flexible(
+              child: Text(
+                _studentName ?? 'Carregando...',
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 18), // Adjust the font size here
+              ),
+            ),
           ],
         ),
         bottom: const PreferredSize(
@@ -152,9 +158,9 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
               _showDisciplinaDropdown(context);
             },
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
+              margin: const EdgeInsets.symmetric(horizontal: 8),
               color: const Color(0xFF007BFF),
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
               child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
