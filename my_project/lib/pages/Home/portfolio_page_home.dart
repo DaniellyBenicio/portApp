@@ -9,7 +9,7 @@ class PortfolioPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Meus Portifólios',
+          'Meus Portfólios',
           textAlign: TextAlign.left,
           style: TextStyle(
             fontSize: 36,
@@ -21,7 +21,7 @@ class PortfolioPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Container(
-            margin: EdgeInsets.all(16.0),
+            margin: const EdgeInsets.all(16.0),
             child: const TextField(
               decoration: InputDecoration(
                 labelText: 'Digite o nome da disciplina',
@@ -37,7 +37,6 @@ class PortfolioPage extends StatelessWidget {
                   for (int i = 0; i < 1; i++) // Substitua 6 pelo número desejado
                     IconPortfolio(
                       onTapPortfolio: (index) {
-                        print('Portfólio ${index + 1} clicado');
                       },
                     ),
                 ],

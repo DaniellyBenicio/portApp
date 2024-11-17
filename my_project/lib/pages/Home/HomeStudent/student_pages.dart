@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:my_project/pages/ViewPortfolioPage.dart';
 import 'package:my_project/services/portfolio_service.dart';
 import 'package:my_project/services/firestore_service.dart';
 import 'package:my_project/pages/Home/HomeStudent/widgets/custom_avatar.dart';
@@ -41,7 +42,7 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
         await _fetchPortfolios(alunoUid);
       }
     } catch (e) {
-      print("Erro ao buscar dados do estudante: $e");
+      //
     } finally {
       if (mounted) {
         setState(() {
@@ -107,24 +108,32 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
         _disciplinas = disciplinas;
       });
     } catch (e) {
-      print("Erro ao buscar disciplinas: $e");
+      //print("Erro ao buscar disciplinas: $e");
     }
   }
 
-  Future<void> _fetchPortfolios(String alunoUid) async {
-    try {
+Future<void> _fetchPortfolios(String alunoUid) async {
+  try {
+    if (_selectedDisciplina != null) {
+
       _portfolios = await _portfolioService.getPortfolios(
-        _selectedDisciplina,
-        alunoUid
+        _selectedDisciplina, 
+        alunoUid,
       );
-      
-      setState(() {}); 
-    } catch (e) {
-      setState(() {
-        _errorMessage = "Não foi possível carregar os portfólios. Tente novamente.";
-      });
+    } else {
+      _portfolios = await _portfolioService.getPortfolios(
+        null, 
+        alunoUid,
+      );
     }
+
+    setState(() {});
+  } catch (e) {
+    setState(() {
+      _errorMessage = "Não foi possível carregar os portfólios. Tente novamente.";
+    });
   }
+}
 
 
   @override
@@ -143,7 +152,7 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
               child: Text(
                 _studentName ?? 'Carregando...',
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 18), // Adjust the font size here
+                style: const TextStyle(fontSize: 18),
               ),
             ),
           ],
@@ -207,7 +216,12 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
                           title: Text(portfolio['titulo']),
                           subtitle: Text(DateFormat('dd/MM/yyyy').format(portfolio['dataCriacao'].toDate())),
                           onTap: () {
-                            // Navegação para a página de detalhes do portfólio
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ViewPortfolioPage(portfolioId: portfolio['id']), // Passa o ID do portfólio para a próxima tela
+                              ),
+                            );
                           },
                         ),
                       );
@@ -234,16 +248,24 @@ class _StudentPortfolioPageState extends State<StudentPortfolioPage> {
             child: ListView.builder(
               itemCount: _disciplinas.length,
               itemBuilder: (context, index) {
+                final disciplina = _disciplinas[index];
                 return ListTile(
-                  title: Text(_disciplinas[index]['nome']),
+                  title: Text(disciplina['nome']),
                   onTap: () {
                     setState(() {
-                      _selectedDisciplina = _disciplinas[index]['id']; // Seleciona a disciplina
+                      if (_selectedDisciplina == disciplina['id']) {
+                        _selectedDisciplina = null;
+                      } else {
+                        _selectedDisciplina = disciplina['id'];
+                      }
                     });
-                    // Recarrega os portfólios da disciplina selecionada
                     _fetchPortfolios(FirebaseAuth.instance.currentUser!.uid);
-                    Navigator.pop(context); // Fecha o diálogo
+
+                    Navigator.pop(context); 
                   },
+                  trailing: _selectedDisciplina == disciplina['id']
+                      ? const Icon(Icons.check, color: Colors.green) 
+                      : null,
                 );
               },
             ),

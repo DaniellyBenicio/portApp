@@ -5,7 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 class DisciplinePortPage extends StatefulWidget {
   final String disciplinaId;
 
-  DisciplinePortPage({required this.disciplinaId});
+  const DisciplinePortPage({required this.disciplinaId});
 
   @override
   _DisciplinePortPageState createState() => _DisciplinePortPageState();
@@ -50,7 +50,7 @@ class _DisciplinePortPageState extends State<DisciplinePortPage> {
       portfolios = snapshot.docs.map((doc) {
         return {
           'id': doc.id,
-          ...doc.data() as Map<String, dynamic>,
+          ...doc.data(),
         };
       }).toList();
 
@@ -61,7 +61,6 @@ class _DisciplinePortPageState extends State<DisciplinePortPage> {
     } catch (e) {
       if (e is FirebaseException) {
         // Exibir mensagem de erro apropriada
-        print('Erro ao recuperar portfólios: $e');
         _showErrorDialog('Erro ao recuperar portfólios: ${e.message}');
       } else {
         _showErrorDialog('Erro inesperado: $e');

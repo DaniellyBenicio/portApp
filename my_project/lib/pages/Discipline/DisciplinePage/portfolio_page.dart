@@ -4,10 +4,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:my_project/services/portfolio_service.dart';
 
 class PortfolioPage extends StatefulWidget {
-  final String disciplinaId; 
+  final String disciplinaId;
   final String disciplinaNome;
 
-  const PortfolioPage({Key? key, required this.disciplinaId, required this.disciplinaNome}) : super(key: key);
+  const PortfolioPage({
+    Key? key,
+    required this.disciplinaId,
+    required this.disciplinaNome,
+  }) : super(key: key);
 
   @override
   _PortfolioPageState createState() => _PortfolioPageState();
@@ -17,262 +21,224 @@ class _PortfolioPageState extends State<PortfolioPage> {
   final _formKey = GlobalKey<FormState>();
   final _tituloController = TextEditingController();
   final _descricaoController = TextEditingController();
-  final PortfolioService _portfolioService = PortfolioService(); 
+  final PortfolioService _portfolioService = PortfolioService();
   bool _isLoading = false;
 
-  // Método para adicionar um portfólio
-  void _showAddPortfolioDialog() {
+  List<String> _tiposArquivosSelecionados = [];
+  bool _permitirComentario = true;
+  bool _permitirMultipleFiles = false;
+
+  final Map<String, List<String>> _tiposDeArquivos = {
+    'Documentos de Texto': ['docx', 'pdf', 'txt', 'odt'],
+    'Imagens': ['jpg', 'jpeg', 'png', 'gif', 'bmp'],
+    'Vídeos': ['mp4', 'avi', 'mov', 'wmv'],
+  };
+
+  void _showPortfolioDialog({String? portfolioId, Map<String, dynamic>? data}) {
+    _tituloController.text = data?['titulo'] ?? '';
+    _descricaoController.text = data?['descricao'] ?? '';
+    _permitirComentario = data?['permitirComentario'] ?? true;
+    _permitirMultipleFiles = data?['permitirMultipleFiles'] ?? false;
+    _tiposArquivosSelecionados =
+        data?['tipoArquivo']?.cast<String>() ?? <String>[];
+
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text('Adicionar Portfólio'),
-          content: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: _tituloController,
-                  decoration: const InputDecoration(labelText: 'Título'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor, insira um título';
-                    }
-                    return null;
-                  },
+        return StatefulBuilder(builder: (context, setDialogState) {
+          return AlertDialog(
+            title: Text(portfolioId == null
+                ? 'Adicionar Portfólio'
+                : 'Editar Portfólio'),
+            content: Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildTextFormField(
+                      controller: _tituloController,
+                      label: 'Título',
+                      validator: (value) =>
+                          value?.isEmpty ?? true ? 'Por favor, insira um título' : null,
+                    ),
+                    _buildTextFormField(
+                      controller: _descricaoController,
+                      label: 'Descrição',
+                      validator: (value) =>
+                          value?.isEmpty ?? true ? 'Por favor, insira uma descrição' : null,
+                    ),
+                    const Text('Tipos de Arquivo Permitidos'),
+                    Column(
+                      children: _tiposDeArquivos.keys.map((tipo) {
+                        return CheckboxListTile(
+                          title: Text(tipo),
+                          value: _tiposArquivosSelecionados.contains(tipo),
+                          onChanged: (bool? value) {
+                            setDialogState(() {
+                              if (value == true) {
+                                _tiposArquivosSelecionados.add(tipo);
+                              } else {
+                                _tiposArquivosSelecionados.remove(tipo);
+                              }
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                    SwitchListTile(
+                      title: const Text('Permitir Comentário'),
+                      value: _permitirComentario,
+                      onChanged: (value) {
+                        setDialogState(() {
+                          _permitirComentario = value;
+                        });
+                      },
+                    ),
+                    SwitchListTile(
+                      title: const Text('Permitir Múltiplos Arquivos'),
+                      value: _permitirMultipleFiles,
+                      onChanged: (value) {
+                        setDialogState(() {
+                          _permitirMultipleFiles = value;
+                        });
+                      },
+                    ),
+                  ],
                 ),
-                TextFormField(
-                  controller: _descricaoController,
-                  decoration: const InputDecoration(labelText: 'Descrição'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor, insira uma descrição';
-                    }
-                    return null;
-                  },
-                ),
-              ],
+              ),
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: _isLoading ? null : () async {
-                if (_formKey.currentState!.validate()) {
-                  await _addPortfolio();
-                }
-              },
-              child: _isLoading 
-                ? const CircularProgressIndicator() 
-                : const Text('Salvar'),
-            ),
-            TextButton(
-              onPressed: () {
-                _tituloController.clear(); 
-                _descricaoController.clear(); 
-                Navigator.of(context).pop(); 
-              },
-              child: const Text('Cancelar'),
-            ),
-          ],
-        );
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: _isLoading
+                    ? null
+                    : () => _savePortfolio(portfolioId: portfolioId),
+                child: _isLoading
+                    ? const CircularProgressIndicator()
+                    : const Text('Salvar'),
+              ),
+            ],
+          );
+        });
       },
     );
   }
 
-  Future<void> _addPortfolio() async {
-    setState(() {
-      _isLoading = true; 
-    });
+  TextFormField _buildTextFormField({
+    required TextEditingController controller,
+    required String label,
+    required String? Function(String?) validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(labelText: label),
+      validator: validator,
+    );
+  }
 
-    User? user = FirebaseAuth.instance.currentUser;
+  Future<void> _savePortfolio({String? portfolioId}) async {
+    if (!_formKey.currentState!.validate()) return;
 
-    if (user != null) {
-      DocumentSnapshot disciplinaSnapshot = await FirebaseFirestore.instance
-          .collection('Disciplinas')
-          .doc(widget.disciplinaId)
-          .get();
+    setState(() => _isLoading = true);
 
-      if (!disciplinaSnapshot.exists) {
-        print('Disciplina não encontrada para o ID: ${widget.disciplinaId}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Disciplina não encontrada.')),
-        );
-        setState(() {
-          _isLoading = false; 
-        });
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      _showSnackBar('Você precisa estar logado.');
+      return;
+    }
+
+    try {
+      if (_tiposArquivosSelecionados.isEmpty) {
+        _showSnackBar('Por favor, selecione pelo menos um tipo de arquivo.');
         return;
       }
 
-      try {
-        await _portfolioService.adicionarPortfolio(
-          disciplinaId: widget.disciplinaId,
-          titulo: _tituloController.text,
-          descricao: _descricaoController.text,
-          professorUid: user.uid,
-        );
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Portfólio adicionado com sucesso!')),
-        );
-
-        _tituloController.clear();
-        _descricaoController.clear();
-        Navigator.of(context).pop();
-      } catch (error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao salvar: $error')),
-        );
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Você precisa estar logado para adicionar um portfólio.')),
+      await _portfolioService.salvarPortfolio(
+        portfolioId: portfolioId,
+        disciplinaId: widget.disciplinaId,
+        titulo: _tituloController.text,
+        descricao: _descricaoController.text,
+        professorUid: user.uid,
+        tipoArquivo: _tiposArquivosSelecionados,
+        permitirComentario: _permitirComentario,
+        permitirMultipleFiles: _permitirMultipleFiles,
       );
-    }
 
-    setState(() {
-      _isLoading = false; 
-    });
+      _showSnackBar('Portfólio salvo com sucesso!');
+      // ignore: use_build_context_synchronously
+      Navigator.of(context).pop();
+    } catch (error) {
+      _showSnackBar('Erro ao salvar: $error');
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
-  Future<void> _editPortfolio(String portfolioId, String currentTitle, String currentDescription) async {
-    _tituloController.text = currentTitle;
-    _descricaoController.text = currentDescription;
-
-    showDialog(
+  Future<void> _confirmDeletePortfolio(String portfolioId) async {
+    final confirm = await showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Editar Portfólio'),
-          content: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextFormField(
-                  controller: _tituloController,
-                  decoration: const InputDecoration(labelText: 'Título'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor, insira um título';
-                    }
-                    return null;
-                  },
-                ),
-                TextFormField(
-                  controller: _descricaoController,
-                  decoration: const InputDecoration(labelText: 'Descrição'),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Por favor, insira uma descrição';
-                    }
-                    return null;
-                  },
-                ),
-              ],
-            ),
-          ),
+          title: const Text('Confirmar Exclusão'),
+          content: const Text('Você tem certeza de que deseja excluir este portfólio?'),
           actions: [
             TextButton(
-              onPressed: _isLoading ? null : () async {
-                if (_formKey.currentState!.validate()) {
-                  await _updatePortfolio(portfolioId);
-                }
-              },
-              child: _isLoading 
-                ? const CircularProgressIndicator() 
-                : const Text('Salvar'),
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancelar'),
             ),
             TextButton(
-              onPressed: () {
-                _tituloController.clear(); 
-                _descricaoController.clear(); 
-                Navigator.of(context).pop(); 
-              },
-              child: const Text('Cancelar'),
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Excluir'),
             ),
           ],
         );
       },
     );
-  }
 
-  Future<void> _updatePortfolio(String portfolioId) async {
-    setState(() {
-      _isLoading = true; 
-    });
-
-    User? user = FirebaseAuth.instance.currentUser;
-
-    if (user != null) {
-      try {
-        await _portfolioService.editarPortfolio(
-          disciplinaId: widget.disciplinaId,
-          portfolioId: portfolioId,
-          titulo: _tituloController.text,
-          descricao: _descricaoController.text,
-        );
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Portfólio atualizado com sucesso!')),
-        );
-
-        _tituloController.clear();
-        _descricaoController.clear();
-        Navigator.of(context).pop();
-      } catch (error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao atualizar: $error')),
-        );
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Você precisa estar logado para atualizar um portfólio.')),
-      );
+    if (confirm == true) {
+      _deletePortfolio(portfolioId);
     }
-
-    setState(() {
-      _isLoading = false; 
-    });
   }
 
   Future<void> _deletePortfolio(String portfolioId) async {
-    User? user = FirebaseAuth.instance.currentUser;
+    final user = FirebaseAuth.instance.currentUser;
 
-    if (user != null) {
-      try {
-        // Passando o disciplinaId junto com o portfolioId para o método de exclusão
-        await _portfolioService.excluirPortfolio(
-          disciplinaId: widget.disciplinaId, // Passando o ID da disciplina
-          portfolioId: portfolioId, // Passando o ID do portfólio
-        );
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Portfólio excluído com sucesso!')),
-        );
-      } catch (error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao excluir: $error')),
-        );
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Você precisa estar logado para excluir um portfólio.')),
-      );
+    if (user == null) {
+      _showSnackBar('Você precisa estar logado.');
+      return;
     }
+
+    try {
+      await _portfolioService.excluirPortfolio(
+        disciplinaId: widget.disciplinaId,
+        portfolioId: portfolioId,
+      );
+      _showSnackBar('Portfólio excluído com sucesso!');
+    } catch (error) {
+      _showSnackBar('Erro ao excluir: $error');
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Portfólio - ${widget.disciplinaNome}'), 
+        title: Text('Portfólio - ${widget.disciplinaNome}'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             ElevatedButton(
-              onPressed: _showAddPortfolioDialog,
+              onPressed: () => _showPortfolioDialog(),
               child: const Text('Adicionar Portfólio'),
             ),
             const SizedBox(height: 16),
@@ -306,11 +272,16 @@ class _PortfolioPageState extends State<PortfolioPage> {
                           children: [
                             IconButton(
                               icon: const Icon(Icons.edit),
-                              onPressed: () => _editPortfolio(portfolioId, data['titulo'], data['descricao']),
+                              onPressed: () {
+                                _showPortfolioDialog(
+                                  portfolioId: portfolioId,
+                                  data: data,
+                                );
+                              },
                             ),
                             IconButton(
                               icon: const Icon(Icons.delete),
-                              onPressed: () => _deletePortfolio(portfolioId),
+                              onPressed: () => _confirmDeletePortfolio(portfolioId),
                             ),
                           ],
                         ),
