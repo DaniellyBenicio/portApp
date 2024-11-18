@@ -47,9 +47,14 @@ class _PortfolioPageState extends State<PortfolioPage> {
       builder: (context) {
         return StatefulBuilder(builder: (context, setDialogState) {
           return AlertDialog(
-            title: Text(portfolioId == null
-                ? 'Adicionar Portfólio'
-                : 'Editar Portfólio'),
+            title: Text(
+              portfolioId == null ? 'Adicionar Portfólio' : 'Editar Portfólio',
+              style: const TextStyle(
+                color: Colors.blueAccent,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             content: Form(
               key: _formKey,
               child: SingleChildScrollView(
@@ -68,7 +73,13 @@ class _PortfolioPageState extends State<PortfolioPage> {
                       validator: (value) =>
                           value?.isEmpty ?? true ? 'Por favor, insira uma descrição' : null,
                     ),
-                    const Text('Tipos de Arquivo Permitidos'),
+                    const Text(
+                      'Tipos de Arquivo Permitidos',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     Column(
                       children: _tiposDeArquivos.keys.map((tipo) {
                         return CheckboxListTile(
@@ -111,7 +122,10 @@ class _PortfolioPageState extends State<PortfolioPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancelar'),
+                child: const Text(
+                  'Cancelar',
+                  style: TextStyle(color: Colors.redAccent),
+                ),
               ),
               TextButton(
                 onPressed: _isLoading
@@ -119,7 +133,10 @@ class _PortfolioPageState extends State<PortfolioPage> {
                     : () => _savePortfolio(portfolioId: portfolioId),
                 child: _isLoading
                     ? const CircularProgressIndicator()
-                    : const Text('Salvar'),
+                    : const Text(
+                        'Salvar',
+                        style: TextStyle(color: Colors.blueAccent),
+                      ),
               ),
             ],
           );
@@ -231,7 +248,15 @@ class _PortfolioPageState extends State<PortfolioPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Portfólio - ${widget.disciplinaNome}'),
+        title: Text(
+          'Portfólio - ${widget.disciplinaNome}',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -239,56 +264,93 @@ class _PortfolioPageState extends State<PortfolioPage> {
           children: [
             ElevatedButton(
               onPressed: () => _showPortfolioDialog(),
-              child: const Text('Adicionar Portfólio'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blueAccent,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                textStyle: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              child: const Text(
+                'Adicionar Portfólio',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('Disciplinas')
-                    .doc(widget.disciplinaId)
-                    .collection('Portfolios')
-                    .orderBy('dataCriacao', descending: true)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.5),
+                      spreadRadius: 5,
+                      blurRadius: 7,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('Disciplinas')
+                      .doc(widget.disciplinaId)
+                      .collection('Portfolios')
+                      .orderBy('dataCriacao', descending: true)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-                  if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return const Center(child: Text('Nenhum portfólio encontrado.'));
-                  }
+                    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                      return const Center(child: Text('Nenhum portfólio encontrado.'));
+                    }
 
-                  return ListView(
-                    children: snapshot.data!.docs.map((doc) {
-                      final data = doc.data() as Map<String, dynamic>;
-                      final portfolioId = doc.id;
+                    return ListView(
+                      children: snapshot.data!.docs.map((doc) {
+                        final data = doc.data() as Map<String, dynamic>;
+                        final portfolioId = doc.id;
 
-                      return ListTile(
-                        title: Text(data['titulo']),
-                        subtitle: Text(data['descricao']),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () {
-                                _showPortfolioDialog(
-                                  portfolioId: portfolioId,
-                                  data: data,
-                                );
-                              },
+                        return ListTile(
+                          title: Text(
+                            data['titulo'],
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                             ),
-                            IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () => _confirmDeletePortfolio(portfolioId),
+                          ),
+                          subtitle: Text(
+                            data['descricao'],
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey,
                             ),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  );
-                },
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.blueAccent),
+                                onPressed: () {
+                                  _showPortfolioDialog(
+                                    portfolioId: portfolioId,
+                                    data: data,
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.redAccent),
+                                onPressed: () => _confirmDeletePortfolio(portfolioId),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    );
+                  },
+                ),
               ),
             ),
           ],
