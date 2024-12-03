@@ -34,7 +34,7 @@ class PortfolioPage extends StatelessWidget {
             child: SingleChildScrollView(
               child: Column(
                 children: <Widget>[
-                  for (int i = 0; i < 1; i++) // Substitua 6 pelo número desejado
+                  for (int i = 0; i < 1; i++) 
                     IconPortfolio(
                       onTapPortfolio: (index) {
                       },

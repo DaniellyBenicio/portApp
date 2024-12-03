@@ -45,7 +45,7 @@ class PortfolioDetailPage extends StatelessWidget {
                   data['descricao'] ?? 'Descrição não disponível',
                   style: const TextStyle(fontSize: 16),
                 ),
-                // Adicione mais campos conforme necessário
+                
               ],
             ),
           );
