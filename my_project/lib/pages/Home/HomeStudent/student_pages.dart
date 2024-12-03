@@ -280,4 +280,4 @@ Future<void> _fetchPortfolios(String alunoUid) async {
       },
     );
   }
-}
+} 

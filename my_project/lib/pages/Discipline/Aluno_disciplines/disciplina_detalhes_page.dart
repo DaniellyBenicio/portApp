@@ -84,7 +84,7 @@ class _DisciplinaDetalhesPageState extends State<DisciplinaDetalhesPage> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Fechar o dialog
+                Navigator.of(context).pop(); 
               },
               child: const Text('OK'),
             ),
@@ -129,7 +129,7 @@ class _DisciplinaDetalhesPageState extends State<DisciplinaDetalhesPage> {
                               style: const TextStyle(fontSize: 16),
                             ),
                             onTap: () {
-                              // Navegar para a página de detalhes do portfólio
+                              // Navega para a página de detalhes do portfólio
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -149,7 +149,7 @@ class _DisciplinaDetalhesPageState extends State<DisciplinaDetalhesPage> {
   }
 }
 
-// Exemplo de página de detalhes do portfólio
+// Exemplo
 class PortfolioDetalhesPage extends StatelessWidget {
   final Map<String, dynamic> portfolio;
 
@@ -175,7 +175,6 @@ class PortfolioDetalhesPage extends StatelessWidget {
               'Descrição: ${portfolio['descricao'] ?? 'Sem descrição'}',
               style: const TextStyle(fontSize: 16),
             ),
-            // Adicione outros detalhes relevantes do portfólio aqui
           ],
         ),
       ),
